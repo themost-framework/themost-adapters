@@ -1,9 +1,9 @@
-# most-data-sqlite
+# @themost/sqlite
 MOST Web Framework SQLite Adapter
 
 ##Install
 
-$ npm install most-data-sqlite
+$ npm install @themost/sqlite
 
 ##Usage
 
