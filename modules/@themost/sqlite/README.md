@@ -11,7 +11,7 @@ Register SQLite adapter on app.json as follows:
 
     "adapterTypes": [
         ...
-          { "name":"SQLite Data Adapter", "invariantName": "sqlite", "type":"most-data-sqlite" }
+          { "name":"SQLite Data Adapter", "invariantName": "sqlite", "type":"@themost/sqlite" }
         ...
         ],
     adapters: [
