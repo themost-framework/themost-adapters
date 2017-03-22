@@ -1,11 +1,11 @@
 # @themost/sqlite
 MOST Web Framework SQLite Adapter
 
-##Install
+## Install
 
 $ npm install @themost/sqlite
 
-##Usage
+## Usage
 
 Register SQLite adapter on app.json as follows:
 
@@ -28,15 +28,15 @@ Register SQLite adapter on app.json as follows:
 
 If you are intended to use SQLite adapter as the default database adapter set the property "default" to true. 
 
-####Post Installation Note:
+#### Post Installation Note:
 SQLite Data Adapter comes with a regular expression extension for SQLite (regexp.c). You have to compile this extension as follows:
 
-#####Using GCC/MinGW on Windows and Linux
+##### Using GCC/MinGW on Windows and Linux
 gcc -shared -fPIC -Isqlite3 -o regexp.0.dylib regexp.c
 
-#####Using GCC on Mac OSX
+##### Using GCC on Mac OSX
 gcc -dynamiclib -fPIC -Isqlite3 -o regexp.0.dylib regexp.c
 
-#####Microsoft Tools on Windows
+##### Microsoft Tools on Windows
 cl /Gd regexp.c /I sqlite3 /DDLL /LD /link /export:sqlite3_extension_init /out:regexp.0.dylib
 
