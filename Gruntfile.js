@@ -23,11 +23,20 @@ module.exports = function(grunt) {
                     "ext": ".js"
                 }]
             },
+            pool: {
+                files: [{
+                    "expand": true,
+                    "cwd":"modules/@themost/pool",
+                    "src": ["*.es6","!node_modules/**/*.es6"],
+                    "dest": "modules/@themost/pool",
+                    "ext": ".js"
+                }]
+            },
             test: {
                 files: [{
                     "expand": true,
                     "cwd":"",
-                    "src": ["test/**/*.es6", "test-app/**/*.es6"],
+                    "src": ["test/**/*.es6"],
                     "dest": "",
                     "ext": ".js"
                 }]
@@ -39,10 +48,17 @@ module.exports = function(grunt) {
                 tasks: ["newer:babel:common"],
                 options: {
                     spawn: false,
-                },
+                }
+            },
+            pool: {
+                files: ["modules/@themost/pool/*.es6","!modules/@themost/pool/node_modules/*.es6"],
+                tasks: ["newer:babel:common"],
+                options: {
+                    spawn: false,
+                }
             },
             test: {
-                files: ["test/**/*.es6", "test-app/**/*.es6"],
+                files: ["test/**/*.es6"],
                 tasks: ["newer:babel:test"],
                 options: {
                     spawn: false,

@@ -1,0 +1,28 @@
+{
+  "name": "@themost/pool",
+  "version": "2.0.0-alpha",
+  "description": "Most Web Framework Data Adapter Pool Extension",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/themost-framework/themost-adapters.git"
+  },
+  "keywords": [
+    "most",
+    "web",
+    "data",
+    "db",
+    "adapter",
+    "pool"
+  ],
+  "author": "Kyriakos Barbounakis <k.barbounakis@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/themost-framework/themost-adapters/issues"
+  },
+  "homepage": "https://github.com/themost-framework/themost-adapters",
+  "dependencies": {
+    "async": "0.2.10",
+    "lodash": "^4.17.4"
+  }
+}
