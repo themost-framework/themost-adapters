@@ -1,0 +1,34 @@
+{
+  "name": "@themost/pg",
+  "version": "2.0.0-alpha",
+  "description": "MOST Web Framework PostgreSQL Adapter",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/themost-framework/themost-adapters.git"
+  },
+  "keywords": [
+    "most",
+    "web",
+    "data",
+    "db",
+    "adapter",
+    "pg",
+    "postgres",
+    "postgresql"
+  ],
+  "author": "Kyriakos Barbounakis <k.barbounakis@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/themost-framework/themost-adapters/issues"
+  },
+  "homepage": "https://github.com/themost-framework/themost-adapters",
+  "dependencies": {
+    "@themost/common": "^2.0.0-alpha",
+    "@themost/query": "^2.0.0-alpha",
+    "async": "^1.4.2",
+    "lodash": "^4.17.4",
+    "pg": "~4.5.5",
+    "pg-native": "^1.8.1"
+  }
+}

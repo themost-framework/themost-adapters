@@ -461,15 +461,15 @@ var MSSqlAdapter = function () {
                     if (fields.length === 0) {
                         return callback(new Error('Invalid argument. Fields collection cannot be empty.'));
                     }
-                    var strFields = fields.filter(function (x) {
+                    var strFields = _.map(_.filter(fields, function (x) {
                         return !x.oneToMany;
-                    }).map(function (x) {
+                    }), function (x) {
                         return MSSqlAdapter.format('[%f] %t', x);
                     }).join(', ');
                     //add primary key constraint
-                    var strPKFields = fields.filter(function (x) {
+                    var strPKFields = _.map(_.filter(fields, function (x) {
                         return x.primary === true || x.primary === 1;
-                    }).map(function (x) {
+                    }), function (x) {
                         return MSSqlAdapter.format('[%f]', x);
                     }).join(', ');
                     if (strPKFields.length > 0) {
@@ -500,7 +500,7 @@ var MSSqlAdapter = function () {
                     }
                     var strTable = util.format('[%s].[%s]', owner, table);
                     //generate SQL statement
-                    var sql = fields.map(function (x) {
+                    var sql = _.map(fields, function (x) {
                         return MSSqlAdapter.format('ALTER TABLE ' + strTable + ' ADD [%f] %t', x);
                     }).join(';');
                     self.execute(sql, [], function (err) {
@@ -526,7 +526,7 @@ var MSSqlAdapter = function () {
                     }
                     var strTable = util.format('[%s].[%s]', owner, table);
                     //generate SQL statement
-                    var sql = fields.map(function (x) {
+                    var sql = _.map(fields, function (x) {
                         return MSSqlAdapter.format('ALTER TABLE ' + strTable + ' ALTER COLUMN [%f] %t', x);
                     }).join(';');
                     self.execute(sql, [], function (err) {
@@ -925,7 +925,7 @@ var MSSqlFormatter = exports.MSSqlFormatter = function (_SqlFormatter) {
                 //delete row index field
                 qfields.pop();
                 var fields = [];
-                qfields.forEach(function (x) {
+                _.forEach(qfields, function (x) {
                     if (typeof x === 'string') {
                         fields.push(new QueryField(x));
                     } else {
@@ -933,7 +933,7 @@ var MSSqlFormatter = exports.MSSqlFormatter = function (_SqlFormatter) {
                         fields.push(field.as() || field.name());
                     }
                 });
-                sql = util.format('SELECT %s FROM (%s) t0 WHERE __RowIndex BETWEEN %s AND %s', fields.map(function (x) {
+                sql = util.format('SELECT %s FROM (%s) t0 WHERE __RowIndex BETWEEN %s AND %s', _.map(fields, function (x) {
                     return self.format(x, '%f');
                 }).join(', '), subQuery, obj.$skip + 1, obj.$skip + obj.$take);
             }
