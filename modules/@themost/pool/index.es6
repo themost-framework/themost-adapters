@@ -15,7 +15,12 @@ import path from 'path';
 const HASH_CODE_LENGTH = 6;
 
 const pools = Symbol('pools');
-
+/**
+ * @function
+ * @param min
+ * @param max
+ * @returns {*}
+ */
 function randomInt(min, max) {
     return Math.floor(Math.random()*max) + min;
 }
@@ -63,7 +68,7 @@ class PoolDictionary {
             set: function(value) {
                 _length = value;
             }, configurable:false, enumerable:false
-        })
+        });
     }
 
     exists(key) {
@@ -91,7 +96,7 @@ class PoolDictionary {
 
     clear() {
         const self = this, keys = _.keys(this);
-        keys.forEach(function(x) {
+        _.forEach(keys, function(x) {
             if (self.hasOwnProperty(x)) {
                 delete self[x];
                 self.length -= 1;
@@ -166,7 +171,7 @@ export class DataPool {
                 log('Configuration file cannot be loaded due to internal error.');
                 log(e);
                 //config cannot be load (do nothing)
-                config = { adapters:[], adapterTypes:[] }
+                config = { adapters:[], adapterTypes:[] };
             }
         }
         let adapter = this.options.adapter, er;
@@ -174,7 +179,7 @@ export class DataPool {
             const name = this.options.adapter;
             //try to load adapter settings from configuration
             config.adapters = config.adapters || [];
-            const namedAdapter = config.adapters.find(function(x) { return x.name === name; });
+            const namedAdapter = _.find(config.adapters, function(x) { return x.name === name; });
             if (typeof namedAdapter === 'undefined') {
                 er = new Error('The specified data adapter cannot be found.');
                 er.code = 'ECONF';
@@ -189,7 +194,7 @@ export class DataPool {
             throw er;
         }
         //get adapter's invariant name
-        const adapterType = config.adapterTypes.find(function(x) { return x.invariantName===adapter.invariantName });
+        const adapterType = _.find(config.adapterTypes, function(x) { return x.invariantName===adapter.invariantName; });
         let adapterModule;
         if (typeof adapterType === 'undefined') {
             er = new Error('The base data adapter cannot be found.');
@@ -231,7 +236,7 @@ export class DataPool {
             }, function(err) {
                 callback(err);
                 //clear available collection
-                keys.forEach(function(key) {
+                _.forEach(keys, function(key) {
                     delete self.available[key];
                 });
                 self.state = 'active';
@@ -262,7 +267,7 @@ export class DataPool {
                 }
                 if (nowTime>(obj.createdAt.getTime()+self.options.lifetime)) {
                     if (typeof obj.close !== 'function') {
-                        return cb()
+                        return cb();
                     }
                     //close data adapter (the client which is using this adapter may get an error for this, but this data adapter has been truly timed out)
                     obj.close(function() {
@@ -413,7 +418,7 @@ export class DataPool {
                 self.waitForObject(function(err, result) {
                     if (err) { return callback(err); }
                     callback(null, result);
-                })
+                });
             });
         }
     }
@@ -668,7 +673,7 @@ process.on('exit', function() {
         const keys = _.keys(DataPool[pools]);
         _.forEach(keys, function(x) {
             try {
-                log(util.format('Cleaning up data pool (%s)', key));
+                log(util.format('Cleaning up data pool (%s)', x));
                 if (typeof DataPool[pools][x] === 'undefined' || DataPool[pools][x] === null) { return; }
                 if (typeof DataPool[pools][x].cleanup === 'function') {
                     DataPool[pools][x].cleanup(function() {

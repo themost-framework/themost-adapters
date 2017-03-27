@@ -266,7 +266,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
             function (arg, cb) {
                 //migration has already been applied (set migration.updated=true)
                 if (arg) {
-                    migration['updated'] = true;
+                    migration.updated = true;
                     cb(null, -1);
                 } else {
                     self.table(migration.appliesTo).exists(function (err, exists) {
@@ -328,7 +328,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         if (migration.remove > 0) {
                             var _loop = function _loop(_i) {
                                 var x = migration.remove[_i];
-                                var colIndex = columns.indexOf(function (y) {
+                                var colIndex = _.findIndex(columns, function (y) {
                                     return y.name === x.name;
                                 });
                                 if (colIndex >= 0) {
@@ -474,7 +474,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         cb(null, 1);
                     });
                 } else {
-                    migration['updated'] = true;
+                    migration.updated = true;
                     cb(null, arg);
                 }
             }], function (err) {
@@ -798,7 +798,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                             callback(null, { insertId: null });
                         } else {
                             lastval = lastval || [];
-                            if (lastval.length > 0) callback(null, { insertId: lastval[0]['lastval'] });else callback(null, { insertId: null });
+                            if (lastval.length > 0) callback(null, { insertId: lastval[0].lastval });else callback(null, { insertId: null });
                         }
                     });
                 }
@@ -1276,9 +1276,9 @@ var REGEXP_SINGLE_QUOTE = /\\'/g,
     SLASH_ESCAPE = '\\';
 
 /**
- * Creates an instance of SqliteAdapter object that represents a sqlite database connection.
+ * Creates an instance of SqliteAdapter object that represents a SQLite database connection.
  * @param {*} options An object that represents the properties of the underlying database connection.
- * @returns {DataAdapter|*}
+ * @returns {*}
  */
 function createInstance(options) {
     return new SqliteAdapter(options);

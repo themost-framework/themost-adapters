@@ -86,7 +86,7 @@ export class SqliteAdapter {
      * @param {*=} values
      */
     prepare(query, values) {
-        return SqlUtils.prepare(query,values)
+        return SqlUtils.prepare(query,values);
     }
 
     static formatType(field) {
@@ -274,7 +274,7 @@ export class SqliteAdapter {
             function(arg, cb) {
                 //migration has already been applied (set migration.updated=true)
                 if (arg) {
-                    migration['updated']=true;
+                    migration.updated=true;
                     cb(null, -1);
                 }
                 else {
@@ -303,7 +303,7 @@ export class SqliteAdapter {
                 else if (args[0] === 0) {
                     //create table
                     const strFields = migration.add.filter(function(x) {
-                        return !x['oneToMany']
+                        return !x['oneToMany'];
                     }).map(
                         function(x) {
                             return format('"%f" %t', x);
@@ -333,7 +333,7 @@ export class SqliteAdapter {
                         if (migration.remove>0) {
                             for (let i = 0; i < migration.remove.length; i++) {
                                 let x = migration.remove[i];
-                                const colIndex = columns.indexOf(function(y) { return y.name === x.name; });
+                                const colIndex = _.findIndex(columns, (y) => { return y.name === x.name; });
                                 if (colIndex>=0) {
                                     if (!columns[colIndex].primary) {
                                         forceAlter = true;
@@ -471,13 +471,13 @@ export class SqliteAdapter {
                     });
                 }
                 else {
-                    migration['updated'] = true;
+                    migration.updated = true;
                     cb(null, arg);
                 }
             }
         ], function(err) {
             callback(err);
-        })
+        });
 
     }
 
@@ -615,7 +615,7 @@ export class SqliteAdapter {
                         callback(null, arr);
                     });
             }
-        }
+        };
 
     }
 
@@ -779,7 +779,7 @@ export class SqliteAdapter {
                     else {
                         lastval = lastval || [];
                         if (lastval.length>0)
-                            callback(null, { insertId:lastval[0]['lastval'] });
+                            callback(null, { insertId:lastval[0].lastval });
                         else
                             callback(null, { insertId: null });
                     }
@@ -804,14 +804,14 @@ export class SqliteAdapter {
                         return {
                             name:x.name,
                             columns:[]
-                        }
+                        };
                     });
                     async.eachSeries(indexes, function(index, cb) {
                         self.execute(util.format('PRAGMA INDEX_INFO(`%s`)', index.name), function(err, columns) {
                            if (err) { return cb(err); }
                             index.columns = columns.map(function(x) {
                                 return x.name;
-                            })
+                            });
                         });
                     }, function(err) {
                         if (err) {
@@ -880,11 +880,11 @@ export class SqliteAdapter {
             },
             drop: function(name, callback) {
                 if (typeof name !== 'string') {
-                    return callback(new Error("Name must be a valid string."))
+                    return callback(new Error("Name must be a valid string."));
                 }
                 self.execute(util.format('PRAGMA INDEX_LIST(`%s`)', table), null, function(err, result) {
                     if (err) { return callback(err); }
-                    const exists = typeof result.find(function(x) { return x.name===name }) !== 'undefined';
+                    const exists = typeof result.find(function(x) { return x.name===name; }) !== 'undefined';
                     if (!exists) {
                         return callback();
                     }
@@ -916,7 +916,7 @@ export class SqliteFormatter extends SqlFormatter {
         this.settings = {
             nameFormat:SqliteFormatter.NAME_FORMAT,
             forceAlias:true
-        }
+        };
     }
 
     escapeName(name) {
@@ -1112,11 +1112,10 @@ const REGEXP_SINGLE_QUOTE=/\\'/g, SINGLE_QUOTE_ESCAPE ='\'\'',
     REGEXP_SLASH=/\\\\/g, SLASH_ESCAPE = '\\';
 
 /**
- * Creates an instance of SqliteAdapter object that represents a sqlite database connection.
+ * Creates an instance of SqliteAdapter object that represents a SQLite database connection.
  * @param {*} options An object that represents the properties of the underlying database connection.
- * @returns {DataAdapter|*}
+ * @returns {*}
  */
 export function createInstance(options) {
     return new SqliteAdapter(options);
 }
-

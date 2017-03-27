@@ -32,6 +32,15 @@ module.exports = function(grunt) {
                     "ext": ".js"
                 }]
             },
+            mysql: {
+                files: [{
+                    "expand": true,
+                    "cwd":"modules/@themost/mysql",
+                    "src": ["*.es6","!node_modules/**/*.es6"],
+                    "dest": "modules/@themost/mysql",
+                    "ext": ".js"
+                }]
+            },
             test: {
                 files: [{
                     "expand": true,
@@ -45,14 +54,21 @@ module.exports = function(grunt) {
         watch: {
             sqlite: {
                 files: ["modules/@themost/sqlite/*.es6","!modules/@themost/sqlite/node_modules/*.es6"],
-                tasks: ["newer:babel:common"],
+                tasks: ["newer:babel:sqlite"],
                 options: {
                     spawn: false,
                 }
             },
             pool: {
                 files: ["modules/@themost/pool/*.es6","!modules/@themost/pool/node_modules/*.es6"],
-                tasks: ["newer:babel:common"],
+                tasks: ["newer:babel:pool"],
+                options: {
+                    spawn: false,
+                }
+            },
+            mysql: {
+                files: ["modules/@themost/mysql/*.es6","!modules/@themost/mysql/node_modules/*.es6"],
+                tasks: ["newer:babel:mysql"],
                 options: {
                     spawn: false,
                 }

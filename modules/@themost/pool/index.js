@@ -41,7 +41,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var HASH_CODE_LENGTH = 6;
 
 var pools = Symbol('pools');
-
+/**
+ * @function
+ * @param min
+ * @param max
+ * @returns {*}
+ */
 function randomInt(min, max) {
     return Math.floor(Math.random() * max) + min;
 }
@@ -124,7 +129,7 @@ var PoolDictionary = function () {
         value: function clear() {
             var self = this,
                 keys = _.keys(this);
-            keys.forEach(function (x) {
+            _.forEach(keys, function (x) {
                 if (self.hasOwnProperty(x)) {
                     delete self[x];
                     self.length -= 1;
@@ -135,10 +140,10 @@ var PoolDictionary = function () {
     }, {
         key: 'unshift',
         value: function unshift() {
-            for (var _key in this) {
-                if (this.hasOwnProperty(_key)) {
-                    var value = this[_key];
-                    delete this[_key];
+            for (var key in this) {
+                if (this.hasOwnProperty(key)) {
+                    var value = this[key];
+                    delete this[key];
                     this.length -= 1;
                     return value;
                 }
@@ -215,7 +220,7 @@ var DataPool = exports.DataPool = function () {
                 var name = this.options.adapter;
                 //try to load adapter settings from configuration
                 config.adapters = config.adapters || [];
-                var namedAdapter = config.adapters.find(function (x) {
+                var namedAdapter = _.find(config.adapters, function (x) {
                     return x.name === name;
                 });
                 if (typeof namedAdapter === 'undefined') {
@@ -232,7 +237,7 @@ var DataPool = exports.DataPool = function () {
                 throw er;
             }
             //get adapter's invariant name
-            var adapterType = config.adapterTypes.find(function (x) {
+            var adapterType = _.find(config.adapterTypes, function (x) {
                 return x.invariantName === adapter.invariantName;
             });
             var adapterModule = void 0;
@@ -278,7 +283,7 @@ var DataPool = exports.DataPool = function () {
                 }, function (err) {
                     callback(err);
                     //clear available collection
-                    keys.forEach(function (key) {
+                    _.forEach(keys, function (key) {
                         delete self.available[key];
                     });
                     self.state = 'active';
@@ -377,10 +382,10 @@ var DataPool = exports.DataPool = function () {
                 }
                 var keys = _.keys(self.available);
                 if (keys.length > 0) {
-                    var _key2 = keys[0];
+                    var key = keys[0];
                     //get connection from available connections
-                    var pooledObj = self.available[_key2];
-                    delete self.available[_key2];
+                    var pooledObj = self.available[key];
+                    delete self.available[key];
                     //push object in inUse collection
                     self.inUse[pooledObj.hashCode] = pooledObj;
                     //return pooled object
@@ -410,12 +415,12 @@ var DataPool = exports.DataPool = function () {
         value: function newObject(callback) {
             var self = this;
             var newObj = void 0;
-            for (var _key3 in self.available) {
-                if (self.available.hasOwnProperty(_key3)) {
+            for (var key in self.available) {
+                if (self.available.hasOwnProperty(key)) {
                     //get available object
-                    newObj = self.available[_key3];
+                    newObj = self.available[key];
                     //delete available key from collection
-                    delete self.available[_key3];
+                    delete self.available[key];
                     //add createdAt property
                     newObj.createdAt = new Date();
                     //push object in inUse collection
@@ -778,7 +783,7 @@ process.on('exit', function () {
         var keys = _.keys(DataPool[pools]);
         _.forEach(keys, function (x) {
             try {
-                log(util.format('Cleaning up data pool (%s)', key));
+                log(util.format('Cleaning up data pool (%s)', x));
                 if (typeof DataPool[pools][x] === 'undefined' || DataPool[pools][x] === null) {
                     return;
                 }
