@@ -1,13 +1,13 @@
-# most-data-oracle
+# @themost/oracle
 Most Web Framework Oracle Adapter
 ##Install
-$ npm install most-data-oracle
+$ npm install @themost/oracle
 ##Usage
 Register Oracle adapter on app.json as follows:
 
     "adapterTypes": [
         ...
-        { "name":"Oracle Data Adapter", "invariantName": "oracle", "type":"most-data-oracle" }
+        { "name":"Oracle Data Adapter", "invariantName": "oracle", "type":"@themost/oracle" }
         ...
     ],
     adapters: [
