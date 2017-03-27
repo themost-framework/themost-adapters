@@ -1,16 +1,21 @@
-most-data-pg
+@themost/pg
 ===========
 
 Most Web Framework PostgreSQL Adapter
 
 ##Install
 
-$ npm install most-data-pg
+$ npm install @themost/pg
 
 ##Usage
 
 Register PostgreSQL adapter on app.json as follows:
 
+    "adapterTypes": [
+            ...
+            { "name":"PostgreSQL Data Adapter", "invariantName": "postgres", "type":"@themost/pg" }
+            ...
+        ],
     adapters: {
         "postgres": { "name":"local-db", "invariantName":"postgres", "default":true,
             "options": {

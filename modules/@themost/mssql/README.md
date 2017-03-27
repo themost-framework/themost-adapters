@@ -1,4 +1,4 @@
-# most-data-mssql
+# @themost/mssql
 Most Web Framework MSSQL Adapter
 ##Install
 $ npm install @themost/mssql
