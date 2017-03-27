@@ -41,6 +41,15 @@ module.exports = function(grunt) {
                     "ext": ".js"
                 }]
             },
+            mssql: {
+                files: [{
+                    "expand": true,
+                    "cwd":"modules/@themost/mssql",
+                    "src": ["*.es6","!node_modules/**/*.es6"],
+                    "dest": "modules/@themost/mssql",
+                    "ext": ".js"
+                }]
+            },
             test: {
                 files: [{
                     "expand": true,
@@ -69,6 +78,13 @@ module.exports = function(grunt) {
             mysql: {
                 files: ["modules/@themost/mysql/*.es6","!modules/@themost/mysql/node_modules/*.es6"],
                 tasks: ["newer:babel:mysql"],
+                options: {
+                    spawn: false,
+                }
+            },
+            mssql: {
+                files: ["modules/@themost/mssql/*.es6","!modules/@themost/mssql/node_modules/*.es6"],
+                tasks: ["newer:babel:mssql"],
                 options: {
                     spawn: false,
                 }

@@ -1,7 +1,7 @@
 {
-  "name": "@themost/mysql",
+  "name": "@themost/mssql",
   "version": "2.0.0-alpha",
-  "description": "MOST Web Framework MySQL Data Adapter",
+  "description": "MOST Web Framework MSSQL Data Adapter",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,13 +13,13 @@
   "keywords": [
     "data",
     "db",
-    "mysql",
+    "mssql",
     "orm",
     "most",
     "database"
   ],
   "author": "Kyriakos Barbounakis <k.barbounakis@gmail.com>",
-  "license": "BSD-3-Clause",
+  "license": "BSD3-Clause",
   "bugs": {
     "url": "https://github.com/themost-framework/themost-adapters/issues"
   },
@@ -29,6 +29,6 @@
     "@themost/common": "^2.0.0-alpha",
     "async": "^1.4.2",
     "lodash": "^4.17.4",
-    "mysql": "^2.1.0"
+    "mssql": "1.3.0"
   }
 }

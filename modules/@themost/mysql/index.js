@@ -46,6 +46,10 @@ var _query = require('@themost/query/query');
 var QueryExpression = _query.QueryExpression;
 var QueryField = _query.QueryField;
 
+var _utils = require('themost/common/utils');
+
+var TraceUtils = _utils.TraceUtils;
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -141,7 +145,7 @@ var MySqlAdapter = function () {
             } else {
                 self.rawConnection.end(function (err) {
                     if (err) {
-                        console.log(err);
+                        TraceUtils.log(err);
                         //do nothing
                         self.rawConnection = null;
                     }
@@ -335,7 +339,7 @@ var MySqlAdapter = function () {
                         //execute raw command
                         self.rawConnection.query(sql, values, function (err, result) {
                             if (process.env.NODE_ENV === 'development') {
-                                console.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', new Date().getTime() - startTime, sql, JSON.stringify(values)));
+                                TraceUtils.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', new Date().getTime() - startTime, sql, JSON.stringify(values)));
                             }
                             callback.bind(self)(err, result);
                         });
@@ -445,13 +449,13 @@ var MySqlAdapter = function () {
                             });
                         }
                         //columns to be removed (unsupported)
-                        if (util.isArray(migration.remove)) {
+                        if (_.isArray(migration.remove)) {
                             if (migration.remove.length > 0) {
                                 return cb(new Error('Data migration remove operation is not supported by this adapter.'));
                             }
                         }
                         //columns to be changed (unsupported)
-                        if (util.isArray(migration.change)) {
+                        if (_.isArray(migration.change)) {
                             if (migration.change.length > 0) {
                                 return cb(new Error('Data migration change operation is not supported by this adapter. Use add collection instead.'));
                             }
@@ -459,7 +463,7 @@ var MySqlAdapter = function () {
                         var column = void 0,
                             newType = void 0,
                             oldType = void 0;
-                        if (util.isArray(migration.add)) {
+                        if (_.isArray(migration.add)) {
                             //init change collection
                             migration.change = [];
                             //get table columns
@@ -605,7 +609,7 @@ var MySqlAdapter = function () {
                 create: function create(fields, callback) {
                     callback = callback || function () {};
                     fields = fields || [];
-                    if (!util.isArray(fields)) {
+                    if (!_.isArray(fields)) {
                         return callback(new Error('Invalid argument type. Expected Array.'));
                     }
                     if (fields.length === 0) {
@@ -639,7 +643,7 @@ var MySqlAdapter = function () {
                     callback = callback || function () {};
                     callback = callback || function () {};
                     fields = fields || [];
-                    if (!util.isArray(fields)) {
+                    if (!_.isArray(fields)) {
                         //invalid argument exception
                         return callback(new Error('Invalid argument type. Expected Array.'));
                     }
@@ -666,7 +670,7 @@ var MySqlAdapter = function () {
                     callback = callback || function () {};
                     callback = callback || function () {};
                     fields = fields || [];
-                    if (!util.isArray(fields)) {
+                    if (!_.isArray(fields)) {
                         //invalid argument exception
                         return callback(new Error('Invalid argument type. Expected Array.'));
                     }
@@ -811,7 +815,7 @@ var MySqlAdapter = function () {
                     var cols = [];
                     if (typeof columns === 'string') {
                         cols.push(columns);
-                    } else if (util.isArray(columns)) {
+                    } else if (_.isArray(columns)) {
                         cols.push.apply(cols, columns);
                     } else {
                         return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
@@ -933,14 +937,14 @@ var MySqlAdapter = function () {
                     break;
                 case 'URL':
                 case 'Text':
-                    s = size > 0 ? util.format('varchar(%s)', size) : 'varchar(512)';
+                    s = size > 0 ? 'varchar(' + size + ')' : 'varchar(512)';
                     break;
                 case 'Note':
-                    s = size > 0 ? util.format('varchar(%s)', size) : 'text';
+                    s = size > 0 ? 'varchar(' + size + ')' : 'text';
                     break;
                 case 'Image':
                 case 'Binary':
-                    s = size > 0 ? util.format('blob(%s)', size) : 'blob';
+                    s = size > 0 ? 'blob(' + size + ')' : 'blob';
                     break;
                 case 'Guid':
                     s = 'varchar(36)';

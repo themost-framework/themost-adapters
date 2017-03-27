@@ -15,6 +15,7 @@ import util from 'util';
 import {_} from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
 import {QueryExpression,QueryField} from "@themost/query/query";
+import {TraceUtils} from "themost/common/utils";
 
 /**
  * @class
@@ -99,7 +100,7 @@ export class MySqlAdapter {
         else {
             self.rawConnection.end(function(err) {
                 if (err) {
-                    console.log(err);
+                    TraceUtils.log(err);
                     //do nothing
                     self.rawConnection=null;
                 }
@@ -287,7 +288,7 @@ export class MySqlAdapter {
                     //execute raw command
                     self.rawConnection.query(sql, values, function(err, result) {
                         if (process.env.NODE_ENV==='development') {
-                            console.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', (new Date()).getTime()-startTime, sql, JSON.stringify(values)));
+                            TraceUtils.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', (new Date()).getTime()-startTime, sql, JSON.stringify(values)));
                         }
                         callback.bind(self)(err, result);
                     });
@@ -353,14 +354,14 @@ export class MySqlAdapter {
                 break;
             case 'URL':
             case 'Text':
-                s = size>0 ?  util.format('varchar(%s)', size) : 'varchar(512)';
+                s = size>0 ?  `varchar(${size})` : 'varchar(512)';
                 break;
             case 'Note':
-                s = size>0 ?  util.format('varchar(%s)', size) : 'text';
+                s = size>0 ?  `varchar(${size})` : 'text';
                 break;
             case 'Image':
             case 'Binary':
-                s = size > 0 ? util.format('blob(%s)', size) : 'blob';
+                s = size > 0 ? `blob(${size})` : 'blob';
                 break;
             case 'Guid':
                 s = 'varchar(36)';
@@ -460,19 +461,19 @@ export class MySqlAdapter {
                             });
                         }
                         //columns to be removed (unsupported)
-                        if (util.isArray(migration.remove)) {
+                        if (_.isArray(migration.remove)) {
                             if (migration.remove.length>0) {
                                 return cb(new Error('Data migration remove operation is not supported by this adapter.'));
                             }
                         }
                         //columns to be changed (unsupported)
-                        if (util.isArray(migration.change)) {
+                        if (_.isArray(migration.change)) {
                             if (migration.change.length>0) {
                                 return cb(new Error('Data migration change operation is not supported by this adapter. Use add collection instead.'));
                             }
                         }
                         let column, newType, oldType;
-                        if (util.isArray(migration.add)) {
+                        if (_.isArray(migration.add)) {
                             //init change collection
                             migration.change = [];
                             //get table columns
@@ -613,7 +614,7 @@ export class MySqlAdapter {
             create: function(fields, callback) {
                 callback = callback || function() {};
                 fields = fields || [];
-                if (!util.isArray(fields)) {
+                if (!_.isArray(fields)) {
                     return callback(new Error('Invalid argument type. Expected Array.'));
                 }
                 if (fields.length === 0) {
@@ -646,7 +647,7 @@ export class MySqlAdapter {
                 callback = callback || function() {};
                 callback = callback || function() {};
                 fields = fields || [];
-                if (!util.isArray(fields)) {
+                if (!_.isArray(fields)) {
                     //invalid argument exception
                     return callback(new Error('Invalid argument type. Expected Array.'));
                 }
@@ -673,7 +674,7 @@ export class MySqlAdapter {
                 callback = callback || function() {};
                 callback = callback || function() {};
                 fields = fields || [];
-                if (!util.isArray(fields)) {
+                if (!_.isArray(fields)) {
                     //invalid argument exception
                     return callback(new Error('Invalid argument type. Expected Array.'));
                 }
@@ -807,7 +808,7 @@ export class MySqlAdapter {
                 if (typeof columns === 'string') {
                     cols.push(columns);
                 }
-                else if (util.isArray(columns)) {
+                else if (_.isArray(columns)) {
                     cols.push.apply(cols,columns);
                 }
                 else {
