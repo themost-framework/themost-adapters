@@ -1,0 +1,32 @@
+{
+  "name": "@themost/h2",
+  "version": "0.1.6",
+  "description": "MOST Web Framework H2 Data Adapter",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/themost-framework/themost-adapters.git"
+  },
+  "keywords": [
+    "data",
+    "db",
+    "mysql",
+    "orm",
+    "most",
+    "database"
+  ],
+  "author": "Kyriakos Barbounakis <k.barbounakis@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/themost-framework/themost-adapters/issues"
+  },
+  "homepage": "https://github.com/themost-framework/themost-adapters",
+  "dependencies": {
+    "async": "^1.4.2",
+    "lodash": "^4.17.4",
+    "jdbc": "^0.3.0"
+  }
+}

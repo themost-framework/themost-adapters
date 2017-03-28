@@ -68,6 +68,15 @@ module.exports = function(grunt) {
                     "ext": ".js"
                 }]
             },
+            h2: {
+                files: [{
+                    "expand": true,
+                    "cwd":"modules/@themost/h2",
+                    "src": ["*.es6","!node_modules/**/*.es6"],
+                    "dest": "modules/@themost/h2",
+                    "ext": ".js"
+                }]
+            },
             test: {
                 files: [{
                     "expand": true,
@@ -116,6 +125,13 @@ module.exports = function(grunt) {
             },
             oracle: {
                 files: ["modules/@themost/oracle/*.es6","!modules/@themost/oracle/node_modules/*.es6"],
+                tasks: ["newer:babel:mssql"],
+                options: {
+                    spawn: false,
+                }
+            },
+            h2: {
+                files: ["modules/@themost/h2/*.es6","!modules/@themost/h2/node_modules/*.es6"],
                 tasks: ["newer:babel:mssql"],
                 options: {
                     spawn: false,
