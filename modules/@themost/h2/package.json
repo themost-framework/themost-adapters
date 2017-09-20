@@ -27,6 +27,8 @@
   "dependencies": {
     "async": "^1.4.2",
     "lodash": "^4.17.4",
-    "jdbc": "^0.3.0"
+    "jdbc": "^0.3.0",
+    "@themost/common":"^2.0.0-alpha.1",
+    "@themost/query":"^2.0.0-alpha.1"
   }
 }

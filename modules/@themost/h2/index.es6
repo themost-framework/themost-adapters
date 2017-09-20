@@ -16,7 +16,7 @@ import util from 'util';
 import {_} from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
 import {QueryExpression,QueryField} from "@themost/query/query";
-import {TraceUtils} from "themost/common/utils";
+import {TraceUtils} from "@themost/common/utils";
 import {SqlUtils} from '@themost/query/utils';
 
 

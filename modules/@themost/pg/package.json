@@ -1,6 +1,6 @@
 {
   "name": "@themost/pg",
-  "version": "2.0.0-alpha",
+  "version": "2.0.0-alpha.1",
   "description": "MOST Web Framework PostgreSQL Adapter",
   "main": "index.js",
   "repository": {
@@ -24,8 +24,8 @@
   },
   "homepage": "https://github.com/themost-framework/themost-adapters",
   "dependencies": {
-    "@themost/common": "^2.0.0-alpha",
-    "@themost/query": "^2.0.0-alpha",
+    "@themost/common": "^2.0.0-alpha.1",
+    "@themost/query": "^2.0.0-alpha.1",
     "async": "^1.4.2",
     "lodash": "^4.17.4",
     "pg": "~4.5.5",
