@@ -7,16 +7,15 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-'use strict';
 import JDBC from 'jdbc';
 import jinst from 'jdbc/lib/jinst';
 import async from 'async';
 import path from 'path';
 import util from 'util';
-import {_} from 'lodash';
+import _ from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
 import {QueryExpression,QueryField} from "@themost/query/query";
-import {TraceUtils} from "@themost/common/utils";
+import {TraceUtils} from '@themost/common/utils';
 import {SqlUtils} from '@themost/query/utils';
 
 
@@ -134,7 +133,7 @@ export class H2Adapter {
         }
         connectionPool.release(self.rawConnection, function(err) {
             if (err) {
-                console.log(err);
+                TraceUtils.log(err);
             }
             self.rawConnection=null;
             return callback();
@@ -178,8 +177,8 @@ export class H2Adapter {
                                 self.rawConnection.conn.rollback(function(err) {
                                     if (err) {
                                         //log transaction rollback error
-                                        util.log("An error occured while rolling back savepoint.");
-                                        util.log(err);
+                                        TraceUtils.log("An error occured while rolling back savepoint.");
+                                        TraceUtils.log(err);
                                     }
                                     delete self.transaction_;
                                     return self.rawConnection.conn.setAutoCommit(true, function() {
@@ -201,8 +200,8 @@ export class H2Adapter {
                         self.rawConnection.conn.rollback(function(err) {
                             if (err) {
                                 //log transaction rollback error
-                                util.log("An error occured while rolling back savepoint.");
-                                util.log(err);
+                                TraceUtils.log("An error occured while rolling back savepoint.");
+                                TraceUtils.log(err);
                             }
                             delete self.transaction_;
                             return self.rawConnection.conn.setAutoCommit(true, function() {
@@ -227,9 +226,9 @@ export class H2Adapter {
 
     /**
      * Produces a new identity value for the given entity and attribute.
-     * @param entity {String} The target entity name
-     * @param attribute {String} The target attribute
-     * @param callback {Function=}
+     * @param {string} entity The target entity name
+     * @param {string} attribute The target attribute
+     * @param {Function=} callback
      */
     selectIdentity(entity, attribute, callback) {
 
@@ -354,7 +353,7 @@ export class H2Adapter {
                         }
                         executeQuery.call(statement, str, function(err, result) {
                             if (process.env.NODE_ENV==='development') {
-                                console.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', (new Date()).getTime()-startTime, sql, JSON.stringify(values)));
+                                TraceUtils.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', (new Date()).getTime()-startTime, sql, JSON.stringify(values)));
                             }
                             if (err) {
                                 return callback(err);
@@ -459,7 +458,7 @@ export class H2Adapter {
                 s = 'INTEGER';
                 break;
         }
-        s += typeof (field.nullable=== 'undefined') ? ' null': (field.nullable===true || field.nullable === 1) ? ' NULL': ' NOT NULL';
+        s += (typeof field.nullable=== 'undefined') ? ' null': (field.nullable===true || field.nullable === 1) ? ' NULL': ' NOT NULL';
         return s;
     }
 
@@ -489,7 +488,6 @@ export class H2Adapter {
                 callback.call(self, err);
             }
             else {
-                const db = self.rawConnection;
                 async.waterfall([
                     //1. Check migrations table existence
                     function(cb) {
@@ -553,11 +551,6 @@ export class H2Adapter {
                             }
                         }
                         let column, newType, oldType;
-                        const findColumnFunc = (name) => {
-                          return _.find(this, (x)=> {
-                              return (name===x.name);
-                          });
-                        };
                         if (util.isArray(migration.add)) {
                             //init change collection
                             migration.change = [];
@@ -566,7 +559,9 @@ export class H2Adapter {
                                 if (err) { return cb(err); }
                                 for (let i = 0; i < migration.add.length; i++) {
                                     const x = migration.add[i];
-                                    column = findColumnFunc.bind(columns)(x.name);
+                                    column = _.find(columns, (y)=> {
+                                        return (y.name===x.name);
+                                    });
                                     if (column) {
                                         //if column is primary key remove it from collection
                                         if (column.primary) {
@@ -894,7 +889,11 @@ export class H2Adapter {
                     'WHERE TABLE_NAME=? AND TABLE_SCHEMA=? AND INDEX_TYPE_NAME=\'INDEX\'', [ table, 'PUBLIC'] , function (err, result) {
                     if (err) { return callback(err); }
                     const indexes = [];
-                    result.forEach(function(x) {
+                    _.forEach(result,
+                        /**
+                         * @param {{indexName:string, columnName:string}} x
+                         */
+                        function(x) {
                        const ix = indexes.find(function(y) {
                           return y.name === x.indexName;
                        });
@@ -927,8 +926,8 @@ export class H2Adapter {
                 else {
                     return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
                 }
-
-                this.list(function(err, indexes) {
+                const thisArg = this;
+                thisArg.list(function(err, indexes) {
                    if (err) { return callback(err); }
                    const ix = indexes.find(function(x) { return x.name === name; });
                     //format create index SQL statement
@@ -952,7 +951,7 @@ export class H2Adapter {
                         });
                         if (nCols>0) {
                             //drop index
-                            this.drop(name, function(err) {
+                            thisArg.drop(name, function(err) {
                                if (err) { return callback(err); }
                                //and create it
                                 self.execute(sqlCreateIndex, [], callback);
@@ -1063,15 +1062,6 @@ export class H2Adapter {
     });
 }
 
-}
-
-/**
- * @returns {string}
- * @private
- */
-function getTimezone_() {
-    const offset = (new Date()).getTimezoneOffset();
-       return (offset<=0 ? '+' : '-') + zeroPad(-Math.floor(offset/60),2) + ':' + zeroPad(offset%60,2);
 }
 
 function zeroPad(number, length) {

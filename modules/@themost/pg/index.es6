@@ -7,15 +7,14 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-'use strict';
 import pg from 'pg';
 import async from 'async';
 import util from 'util';
-import {_} from 'lodash';
+import _ from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
 import {QueryExpression,QueryField} from "@themost/query/query";
 import {SqlUtils} from "@themost/query/utils";
-import {TraceUtils} from "themost/common/utils";
+import {TraceUtils} from "@themost/common/utils";
 
 
 pg.types.setTypeParser(20, function(val) {
@@ -87,7 +86,7 @@ export class PGSqlAdapter {
                 return callback(err);
             }
             if (process.env.NODE_ENV==='development') {
-                console.log(util.format('SQL (Execution Time:%sms): Connect', (new Date()).getTime()-startTime));
+                TraceUtils.log(util.format('SQL (Execution Time:%sms): Connect', (new Date()).getTime()-startTime));
             }
             //and return
             callback(err);
@@ -126,7 +125,7 @@ export class PGSqlAdapter {
             callback();
         }
         catch(e) {
-            console.log('An error occurred while trying to close database connection. ' + e.message);
+            TraceUtils.log('An error occurred while trying to close database connection. ' + e.message);
             this.rawConnection = null;
             //do nothing (do not raise an error)
             callback();
@@ -190,11 +189,11 @@ export class PGSqlAdapter {
                     //execute raw command
                     self.rawConnection.query(prepared, null, function(err, result) {
                         if (process.env.NODE_ENV==='development') {
-                            console.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', (new Date()).getTime()-startTime, prepared, JSON.stringify(values)));
+                            TraceUtils.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', (new Date()).getTime()-startTime, prepared, JSON.stringify(values)));
                         }
                         if (err) {
                             //log sql
-                            console.log(util.format('SQL Error:%s', prepared));
+                            TraceUtils.log(util.format('SQL Error:%s', prepared));
                             callback(err);
                         }
                         else {
@@ -473,7 +472,7 @@ export class PGSqlAdapter {
                         if (arg===0) { cb(null, 0); return; }
                         //format query
                         const sql = util.format("DROP VIEW \"%s\"",name);
-                        self.execute(sql, null, function(err, result) {
+                        self.execute(sql, null, function(err) {
                             if (err) { throw err; }
                             cb(null, 0);
                         });
@@ -483,7 +482,7 @@ export class PGSqlAdapter {
                         const formatter = new PGSqlFormatter();
                         formatter.settings.nameFormat = PGSqlAdapter.NAME_FORMAT;
                         const sql = util.format("CREATE VIEW \"%s\" AS %s", name, formatter.format(query));
-                        self.execute(sql, null, function(err, result) {
+                        self.execute(sql, null, function(err) {
                             if (err) { throw err; }
                             cb(null, 0);
                         });
@@ -546,7 +545,7 @@ export class PGSqlAdapter {
              */
             has_sequence:function(callback) {
                 callback = callback || function() {};
-                self.execute('SELECT COUNT(*) FROM information_schema.columns WHERE table_name=? AND table_schema=\'public\' AND ("column_default" ~ \'^nextval\((.*?)\)$\')',
+                self.execute('SELECT COUNT(*) FROM information_schema.columns WHERE table_name=? AND table_schema=\'public\' AND ("column_default" ~ \'^nextval\\((.*?)\\)$\')',
                     [name], function(err, result) {
                         if (err) { callback(err); return; }
                         callback(null, (result[0].count>0));
@@ -665,10 +664,10 @@ export class PGSqlAdapter {
                             const strFields = _.map(_.filter(migration.add, (x) => {
                                 return !x.oneToMany;
                             }),(x) => {
-                                    return format('\"%f\" %t', x);
+                                    return format('"%f" %t', x);
                                 }).join(', ');
                             const key = _.find(migration.add, (x) => { return x.primary; });
-                            const sql = util.format('CREATE TABLE \"%s\" (%s, PRIMARY KEY(\"%s\"))', migration.appliesTo, strFields, key.name);
+                            const sql = util.format('CREATE TABLE "%s" (%s, PRIMARY KEY("%s"))', migration.appliesTo, strFields, key.name);
                             self.execute(sql, null, function(err)
                             {
                                 if (err) { return cb(err); }
@@ -681,7 +680,7 @@ export class PGSqlAdapter {
                             let column;
                             let fname;
                             const findColumnFunc = (name) => {
-                                return _.find(this, (x) => {
+                                return _.find(columns, (x) => {
                                     return x.columnName === name;
                                 });
                             };
@@ -689,14 +688,14 @@ export class PGSqlAdapter {
                             if (migration.remove) {
                                 for(let i=0;i<migration.remove.length;i++) {
                                     fname=migration.remove[i].name;
-                                    column = findColumnFunc.bind(columns)(fname);
+                                    column = findColumnFunc(fname);
                                     if (typeof column !== 'undefined') {
                                         let k= 1, deletedColumnName =util.format('xx%s1_%s', k.toString(), column.columnName);
-                                        while(typeof findColumnFunc.bind(columns)(deletedColumnName) !=='undefined') {
+                                        while(typeof findColumnFunc(deletedColumnName) !=='undefined') {
                                             k+=1;
                                             deletedColumnName =util.format('xx%s_%s', k.toString(), column.columnName);
                                         }
-                                        expressions.push(util.format('ALTER TABLE \"%s\" RENAME COLUMN \"%s\" TO %s', migration.appliesTo, column.columnName, deletedColumnName));
+                                        expressions.push(util.format('ALTER TABLE "%s" RENAME COLUMN "%s" TO %s', migration.appliesTo, column.columnName, deletedColumnName));
                                     }
                                 }
                             }
@@ -709,7 +708,7 @@ export class PGSqlAdapter {
                                     //get field name
                                     fieldName = migration.add[i].name;
                                     //check if field exists or not
-                                    column = findColumnFunc.bind(columns)(fieldName);
+                                    column = findColumnFunc(fieldName);
                                     if (typeof column !== 'undefined') {
                                         //get original field size
                                         originalSize = column.maxLength;
@@ -721,23 +720,23 @@ export class PGSqlAdapter {
                                         }
                                         //update nullable attribute
                                         nullable = (typeof migration.add[i].nullable !=='undefined') ? migration.add[i].nullable  : true;
-                                        expressions.push(util.format('ALTER TABLE \"%s\" ALTER COLUMN \"%s\" %s', migration.appliesTo, fieldName, (nullable ? 'DROP NOT NULL' : 'SET NOT NULL')));
+                                        expressions.push(util.format('ALTER TABLE "%s" ALTER COLUMN "%s" %s', migration.appliesTo, fieldName, (nullable ? 'DROP NOT NULL' : 'SET NOT NULL')));
                                     }
                                     else {
                                         //add expression for adding column
-                                        expressions.push(util.format('ALTER TABLE \"%s\" ADD COLUMN \"%s\" %s', migration.appliesTo, fieldName, PGSqlAdapter.formatType(migration.add[i])));
+                                        expressions.push(util.format('ALTER TABLE "%s" ADD COLUMN "%s" %s', migration.appliesTo, fieldName, PGSqlAdapter.formatType(migration.add[i])));
                                     }
                                 }
                             }
 
                             //3. enumerate fields to update
                             if (migration.change) {
-                                for(var i=0;i<migration.change.length;i++) {
+                                for(let i=0;i<migration.change.length;i++) {
                                     const change = migration.change[i];
-                                    column = findColumnFunc.bind(columns)(change);
+                                    column = findColumnFunc(change);
                                     if (typeof column !== 'undefined') {
                                         //important note: Alter column operation is not supported for column types
-                                        expressions.push(util.format('ALTER TABLE \"%s\" ALTER COLUMN \"%s\" TYPE %s', migration.appliesTo, migration.add[i].name, PGSqlAdapter.formatType(migration.change[i])));
+                                        expressions.push(util.format('ALTER TABLE "%s" ALTER COLUMN "%s" TYPE %s', migration.appliesTo, migration.add[i].name, PGSqlAdapter.formatType(migration.change[i])));
                                     }
                                 }
                             }
@@ -759,7 +758,7 @@ export class PGSqlAdapter {
                             self.execute('INSERT INTO migrations("appliesTo", "model", "version", "description") VALUES (?,?,?,?)', [migration.appliesTo,
                                 migration.model,
                                 migration.version,
-                                migration.description ], function(err, result)
+                                migration.description ], function(err)
                             {
                                 if (err) throw err;
                                 return cb(null, 1);

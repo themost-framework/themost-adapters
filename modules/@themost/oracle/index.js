@@ -34,22 +34,17 @@ var util = _interopRequireDefault(_util).default;
 
 var _lodash = require('lodash');
 
-var _ = _lodash._;
+var _ = _interopRequireDefault(_lodash).default;
 
 var _formatter = require('@themost/query/formatter');
 
 var SqlFormatter = _formatter.SqlFormatter;
 
-var _query = require('@themost/query/query');
-
-var QueryExpression = _query.QueryExpression;
-var QueryField = _query.QueryField;
-
-var _utils = require('themost/common/utils');
+var _utils = require('@themost/common/utils');
 
 var TraceUtils = _utils.TraceUtils;
 
-var _utils2 = require('themost/query/utils');
+var _utils2 = require('@themost/query/utils');
 
 var SqlUtils = _utils2.SqlUtils;
 
@@ -143,10 +138,10 @@ var OracleAdapter = exports.OracleAdapter = function () {
                     //close connection
                     self.rawConnection.release(function (err) {
                         if (process.env.NODE_ENV === 'development') {
-                            console.log('An error occured while closing database.');
-                            console.log(err.message);
+                            TraceUtils.log('An error occured while closing database.');
+                            TraceUtils.log(err.message);
                             if (err.stack) {
-                                console.log(err.stack);
+                                TraceUtils.log(err.stack);
                             }
                         }
                         //and finally return
@@ -156,8 +151,8 @@ var OracleAdapter = exports.OracleAdapter = function () {
                     callback();
                 }
             } catch (e) {
-                console.log('An error occured while closing database.');
-                console.log(e.message);
+                TraceUtils.log('An error occured while closing database.');
+                TraceUtils.log(e.message);
                 //call callback without error
                 callback();
             }
@@ -325,8 +320,6 @@ var OracleAdapter = exports.OracleAdapter = function () {
             },
             //5. Migrate target table (create or alter)
             function (arg, cb) {
-                var _this = this;
-
                 //migration has already been applied (args[0]=-1)
                 if (arg < 0) {
                     cb(null, arg);
@@ -341,12 +334,6 @@ var OracleAdapter = exports.OracleAdapter = function () {
                     var column = void 0,
                         newType = void 0,
                         oldType = void 0;
-                    //validate operations
-                    var findColumnFunc = function findColumnFunc(name) {
-                        return _.find(_this, function (x) {
-                            return x.name === name;
-                        });
-                    };
 
                     //1. columns to be removed
                     if (util.isArray(migration.remove)) {
@@ -369,14 +356,17 @@ var OracleAdapter = exports.OracleAdapter = function () {
                             if (err) {
                                 return cb(err);
                             }
-                            for (var i = 0; i < migration.add.length; i++) {
-                                var x = migration.add[i];
-                                column = findColumnFunc.bind(columns)(x.name);
+
+                            var _loop = function _loop(_i) {
+                                var x = migration.add[_i];
+                                column = _.find(columns, function (y) {
+                                    return y.name === x.name;
+                                });
                                 if (column) {
                                     //if column is primary key remove it from collection
                                     if (column.primary) {
-                                        migration.add.splice(i, 1);
-                                        i -= 1;
+                                        migration.add.splice(_i, 1);
+                                        _i -= 1;
                                     } else {
                                         newType = format('%t', x);
                                         if (column.precision !== null && column.scale !== null) {
@@ -389,14 +379,19 @@ var OracleAdapter = exports.OracleAdapter = function () {
                                             oldType = util.format('%s %s', column.type.toUpperCase(), column.nullable ? 'NULL' : 'NOT NULL');
                                         }
                                         //remove column from collection
-                                        migration.add.splice(i, 1);
-                                        i -= 1;
+                                        migration.add.splice(_i, 1);
+                                        _i -= 1;
                                         if (newType !== oldType) {
                                             //add column to alter collection
                                             migration.change.push(x);
                                         }
                                     }
                                 }
+                                i = _i;
+                            };
+
+                            for (var i = 0; i < migration.add.length; i++) {
+                                _loop(i);
                             }
                             //alter table
                             var targetTable = self.table(migration.appliesTo);
@@ -423,10 +418,9 @@ var OracleAdapter = exports.OracleAdapter = function () {
             }, function (arg, cb) {
                 if (arg > 0) {
                     //log migration to database
-                    self.execute('INSERT INTO "migrations"("id","appliesTo", "model", "version", "description") VALUES ("migrations_id_seq".nextval,?,?,?,?)', [migration.appliesTo, migration.model, migration.version, migration.description], function (err, result) {
+                    self.execute('INSERT INTO "migrations"("id","appliesTo", "model", "version", "description") VALUES ("migrations_id_seq".nextval,?,?,?,?)', [migration.appliesTo, migration.model, migration.version, migration.description], function (err) {
                         if (err) {
-                            cb(err);
-                            return;
+                            return cb(err);
                         }
                         cb(null, 1);
                     });
@@ -459,7 +453,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
                     return callback(err);
                 }
                 if (result.length === 0) {
-                    self.execute(util.format('CREATE SEQUENCE "%s" START WITH 1 INCREMENT BY 1', name), [], function (err, result) {
+                    self.execute(util.format('CREATE SEQUENCE "%s" START WITH 1 INCREMENT BY 1', name), [], function (err) {
                         if (err) {
                             return callback(err);
                         }
@@ -498,7 +492,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
 
         /**
          * Executes an operation against database and returns the results.
-         * @param {DataModelBatch} batch
+         * @param {*} batch
          * @param {function(Error=)} callback
          */
 
@@ -560,7 +554,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
                 version: function version(callback) {
                     self.execute('SELECT MAX("version") AS "version" FROM "migrations" WHERE "appliesTo"=?', [name], function (err, result) {
                         if (err) {
-                            cb(err);return;
+                            return callback(err);
                         }
                         if (result.length === 0) callback(null, '0.0');else callback(null, result[0].version || '0.0');
                     });
@@ -845,14 +839,14 @@ var OracleAdapter = exports.OracleAdapter = function () {
                         callback.call(self, err);
                     } else {
                         //log statement (optional)
-                        if (process.env.NODE_ENV === 'development') console.log(util.format('SQL:%s, Parameters:%s', sql, JSON.stringify(values)));
+                        if (process.env.NODE_ENV === 'development') TraceUtils.log(util.format('SQL:%s, Parameters:%s', sql, JSON.stringify(values)));
                         //prepare statement - the traditional way
                         var prepared = self.prepare(sql, values);
                         //execute raw command
                         self.rawConnection.execute(prepared, [], { outFormat: oracledb.OBJECT, autoCommit: typeof self.transaction === 'undefined' }, function (err, result) {
                             if (err) {
                                 //log sql
-                                console.log(util.format('SQL Error:%s', prepared));
+                                TraceUtils.log(util.format('SQL Error:%s', prepared));
                                 callback(err);
                             } else {
                                 if (result) callback(null, result.rows);else callback();
@@ -962,13 +956,13 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
     function OracleFormatter() {
         _classCallCheck(this, OracleFormatter);
 
-        var _this2 = _possibleConstructorReturn(this, (OracleFormatter.__proto__ || Object.getPrototypeOf(OracleFormatter)).call(this));
+        var _this = _possibleConstructorReturn(this, (OracleFormatter.__proto__ || Object.getPrototypeOf(OracleFormatter)).call(this));
 
-        _this2.settings = {
+        _this.settings = {
             nameFormat: OracleFormatter.NAME_FORMAT,
             forceAlias: true
         };
-        return _this2;
+        return _this;
     }
 
     _createClass(OracleFormatter, [{
@@ -1181,8 +1175,8 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
 
         /**
          * Implements contains(a,b) expression formatter.
-         * @param {string} p0 The source string
-         * @param {string} p1 The string to search for
+         * @param {*} p0 The source string
+         * @param {string|*} p1 The string to search for
          * @returns {string}
          */
 
@@ -1200,12 +1194,9 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
 
 OracleFormatter.NAME_FORMAT = '"$1"';
 
-var REGEXP_SINGLE_QUOTE = /\\'/g,
-    SINGLE_QUOTE_ESCAPE = '\'\'',
-    REGEXP_DOUBLE_QUOTE = /\\"/g,
-    DOUBLE_QUOTE_ESCAPE = '"',
-    REGEXP_SLASH = /\\\\/g,
-    SLASH_ESCAPE = '\\';
+var SINGLE_QUOTE_ESCAPE = '\'\'';
+var DOUBLE_QUOTE_ESCAPE = '"';
+var SLASH_ESCAPE = '\\';
 
 /**
  * Creates an instance of OracleAdapter object that represents an Oracle database connection.

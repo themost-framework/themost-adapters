@@ -7,7 +7,6 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-'use strict';
 import mysql from 'mysql';
 import async from 'async';
 import util from 'util';
@@ -408,7 +407,6 @@ export class MySqlAdapter {
                 callback.bind(self)(err);
             }
             else {
-                const db = self.rawConnection;
                 async.waterfall([
                     //1. Check migrations table existence
                     function(cb) {
@@ -813,8 +811,9 @@ export class MySqlAdapter {
                 else {
                     return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
                 }
+                const thisArg = this;
+                thisArg.list(function(err, indexes) {
 
-                this.list(function(err, indexes) {
                     if (err) { return callback(err); }
                     const ix =_.find(indexes, function(x) { return x.name === name; });
                     //format create index SQL statement
@@ -838,7 +837,7 @@ export class MySqlAdapter {
                         });
                         if (nCols>0) {
                             //drop index
-                            this.drop(name, function(err) {
+                            thisArg.drop(name, function(err) {
                                 if (err) { return callback(err); }
                                 //and create it
                                 self.execute(sqlCreateIndex, [], callback);

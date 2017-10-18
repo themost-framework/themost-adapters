@@ -10,11 +10,10 @@
 import oracledb from 'oracledb';
 import async from 'async';
 import util from 'util';
-import {_} from 'lodash';
+import _ from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
-import {QueryExpression,QueryField} from "@themost/query/query";
-import {TraceUtils} from "themost/common/utils";
-import {SqlUtils} from "themost/query/utils";
+import {TraceUtils} from "@themost/common/utils";
+import {SqlUtils} from "@themost/query/utils";
 
 /**
  * @class
@@ -85,9 +84,9 @@ export class OracleAdapter {
                 //close connection
                 self.rawConnection.release(function(err) {
                     if (process.env.NODE_ENV === 'development') {
-                        console.log('An error occured while closing database.');
-                        console.log(err.message);
-                        if (err.stack) { console.log(err.stack); }
+                        TraceUtils.log('An error occured while closing database.');
+                        TraceUtils.log(err.message);
+                        if (err.stack) { TraceUtils.log(err.stack); }
                     }
                     //and finally return
                     callback();
@@ -99,8 +98,8 @@ export class OracleAdapter {
 
         }
         catch (e) {
-            console.log('An error occured while closing database.');
-            console.log(e.message);
+            TraceUtils.log('An error occured while closing database.');
+            TraceUtils.log(e.message);
             //call callback without error
             callback();
         }
@@ -340,10 +339,6 @@ export class OracleAdapter {
                 }
                 else if (arg === 1) {
                     let column, newType, oldType;
-                    //validate operations
-                    const findColumnFunc = (name) => {
-                      return _.find(this, (x) => { return x.name === name; })  ;
-                    };
 
                     //1. columns to be removed
                     if (util.isArray(migration.remove)) {
@@ -366,7 +361,9 @@ export class OracleAdapter {
                             if (err) { return cb(err); }
                             for (let i = 0; i < migration.add.length; i++) {
                                 const x = migration.add[i];
-                                column = findColumnFunc.bind(columns)(x.name);
+                                column = _.find(columns, function(y) {
+                                    return y.name === x.name;
+                                });
                                 if (column) {
                                     //if column is primary key remove it from collection
                                     if (column.primary) {
@@ -424,10 +421,9 @@ export class OracleAdapter {
                     self.execute('INSERT INTO "migrations"("id","appliesTo", "model", "version", "description") VALUES ("migrations_id_seq".nextval,?,?,?,?)', [migration.appliesTo,
                         migration.model,
                         migration.version,
-                        migration.description ], function(err, result) {
+                        migration.description ], function(err) {
                         if (err)  {
-                            cb(err);
-                            return;
+                            return cb(err);
                         }
                         cb(null, 1);
                     });
@@ -458,7 +454,7 @@ export class OracleAdapter {
         self.execute('SELECT SEQUENCE_OWNER,SEQUENCE_NAME FROM ALL_SEQUENCES WHERE "SEQUENCE_NAME" = ?', [name], function(err, result) {
             if (err) { return callback(err); }
             if (result.length===0) {
-                self.execute(util.format('CREATE SEQUENCE "%s" START WITH 1 INCREMENT BY 1', name), [], function(err, result) {
+                self.execute(util.format('CREATE SEQUENCE "%s" START WITH 1 INCREMENT BY 1', name), [], function(err) {
                     if (err) { return callback(err); }
                     //get next value
                     self.execute(util.format('SELECT "%s".nextval AS "resultId" FROM DUAL', name), [], function(err, result) {
@@ -489,7 +485,7 @@ export class OracleAdapter {
 
     /**
      * Executes an operation against database and returns the results.
-     * @param {DataModelBatch} batch
+     * @param {*} batch
      * @param {function(Error=)} callback
      */
     executeBatch(batch, callback) {
@@ -550,7 +546,7 @@ export class OracleAdapter {
             version:function(callback) {
                 self.execute('SELECT MAX("version") AS "version" FROM "migrations" WHERE "appliesTo"=?',
                     [name], function(err, result) {
-                        if (err) { cb(err); return; }
+                        if (err) { return callback(err); }
                         if (result.length===0)
                             callback(null, '0.0');
                         else
@@ -590,7 +586,9 @@ export class OracleAdapter {
                 'cons.constraint_type FROM all_constraints cons, all_cons_columns cols WHERE cons.constraint_type = \'P\' ' +
                 'AND cons.constraint_name = cols.constraint_name AND cons.owner = cols.owner) t0 ON c0.TABLE_NAME=t0.TABLE_NAME ' +
                 'AND c0.OWNER=t0.OWNER AND c0.COLUMN_NAME=t0.COLUMN_NAME WHERE c0.TABLE_NAME = ?';
-                if (owner) { sql += ' AND REGEXP_LIKE(c0.OWNER,?,\'i\')'; }
+                if (owner) { 
+                    sql += ' AND REGEXP_LIKE(c0.OWNER,?,\'i\')'
+                }
                 self.execute(sql, [name, '^' + owner + '$'], function(err, result) {
                         if (err) { callback(err); return; }
                         callback(null, result);
@@ -825,14 +823,14 @@ export class OracleAdapter {
                 else {
                     //log statement (optional)
                     if (process.env.NODE_ENV==='development')
-                        console.log(util.format('SQL:%s, Parameters:%s', sql, JSON.stringify(values)));
+                        TraceUtils.log(util.format('SQL:%s, Parameters:%s', sql, JSON.stringify(values)));
                     //prepare statement - the traditional way
                     const prepared = self.prepare(sql, values);
                     //execute raw command
                     self.rawConnection.execute(prepared,[], {outFormat: oracledb.OBJECT, autoCommit: (typeof self.transaction === 'undefined') }, function(err, result) {
                         if (err) {
                             //log sql
-                            console.log(util.format('SQL Error:%s', prepared));
+                            TraceUtils.log(util.format('SQL Error:%s', prepared));
                             callback(err);
                         }
                         else {
@@ -1054,8 +1052,8 @@ export class OracleFormatter extends SqlFormatter {
 
     /**
      * Implements contains(a,b) expression formatter.
-     * @param {string} p0 The source string
-     * @param {string} p1 The string to search for
+     * @param {*} p0 The source string
+     * @param {string|*} p1 The string to search for
      * @returns {string}
      */
     $regex(p0, p1) {
@@ -1068,12 +1066,9 @@ export class OracleFormatter extends SqlFormatter {
 
 OracleFormatter.NAME_FORMAT = '"$1"';
 
-const REGEXP_SINGLE_QUOTE=/\\'/g,
-    SINGLE_QUOTE_ESCAPE ='\'\'',
-    REGEXP_DOUBLE_QUOTE=/\\"/g,
-    DOUBLE_QUOTE_ESCAPE = '"',
-    REGEXP_SLASH=/\\\\/g,
-    SLASH_ESCAPE = '\\';
+const SINGLE_QUOTE_ESCAPE = '\'\'';
+const DOUBLE_QUOTE_ESCAPE = '"';
+const SLASH_ESCAPE = '\\';
 
 /**
  * Creates an instance of OracleAdapter object that represents an Oracle database connection.

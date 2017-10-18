@@ -1,12 +1,3 @@
-/**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
- *                     Anthi Oikonomou anthioikonomou@gmail.com
- *
- * Use of this source code is governed by an BSD-3-Clause license that can be
- * found in the LICENSE file at https://themost.io/license
- */
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -16,7 +7,16 @@ exports.H2Formatter = exports.H2Adapter = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * MOST Web Framework 2.0 Codename Blueshift
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *                     Anthi Oikonomou anthioikonomou@gmail.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Use of this source code is governed by an BSD-3-Clause license that can be
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * found in the LICENSE file at https://themost.io/license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
 
 exports.createInstance = createInstance;
 
@@ -42,7 +42,7 @@ var util = _interopRequireDefault(_util).default;
 
 var _lodash = require('lodash');
 
-var _ = _lodash._;
+var _ = _interopRequireDefault(_lodash).default;
 
 var _formatter = require('@themost/query/formatter');
 
@@ -53,7 +53,7 @@ var _query = require('@themost/query/query');
 var QueryExpression = _query.QueryExpression;
 var QueryField = _query.QueryField;
 
-var _utils = require('themost/common/utils');
+var _utils = require('@themost/common/utils');
 
 var TraceUtils = _utils.TraceUtils;
 
@@ -195,7 +195,7 @@ var H2Adapter = function () {
             }
             connectionPool.release(self.rawConnection, function (err) {
                 if (err) {
-                    console.log(err);
+                    TraceUtils.log(err);
                 }
                 self.rawConnection = null;
                 return callback();
@@ -241,8 +241,8 @@ var H2Adapter = function () {
                                     self.rawConnection.conn.rollback(function (err) {
                                         if (err) {
                                             //log transaction rollback error
-                                            util.log("An error occured while rolling back savepoint.");
-                                            util.log(err);
+                                            TraceUtils.log("An error occured while rolling back savepoint.");
+                                            TraceUtils.log(err);
                                         }
                                         delete self.transaction_;
                                         return self.rawConnection.conn.setAutoCommit(true, function () {
@@ -262,8 +262,8 @@ var H2Adapter = function () {
                             self.rawConnection.conn.rollback(function (err) {
                                 if (err) {
                                     //log transaction rollback error
-                                    util.log("An error occured while rolling back savepoint.");
-                                    util.log(err);
+                                    TraceUtils.log("An error occured while rolling back savepoint.");
+                                    TraceUtils.log(err);
                                 }
                                 delete self.transaction_;
                                 return self.rawConnection.conn.setAutoCommit(true, function () {
@@ -291,9 +291,9 @@ var H2Adapter = function () {
 
         /**
          * Produces a new identity value for the given entity and attribute.
-         * @param entity {String} The target entity name
-         * @param attribute {String} The target attribute
-         * @param callback {Function=}
+         * @param {string} entity The target entity name
+         * @param {string} attribute The target attribute
+         * @param {Function=} callback
          */
 
     }, {
@@ -423,7 +423,7 @@ var H2Adapter = function () {
                             }
                             executeQuery.call(statement, str, function (err, result) {
                                 if (process.env.NODE_ENV === 'development') {
-                                    console.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', new Date().getTime() - startTime, sql, JSON.stringify(values)));
+                                    TraceUtils.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', new Date().getTime() - startTime, sql, JSON.stringify(values)));
                                 }
                                 if (err) {
                                     return callback(err);
@@ -482,7 +482,6 @@ var H2Adapter = function () {
                 if (err) {
                     callback.call(self, err);
                 } else {
-                    var db = self.rawConnection;
                     async.waterfall([
                     //1. Check migrations table existence
                     function (cb) {
@@ -529,8 +528,6 @@ var H2Adapter = function () {
                     },
                     //4b. Migrate target table (create or alter)
                     function (arg, cb) {
-                        var _this = this;
-
                         //migration has already been applied
                         if (arg < 0) {
                             return cb(null, arg);
@@ -559,11 +556,6 @@ var H2Adapter = function () {
                         var column = void 0,
                             newType = void 0,
                             oldType = void 0;
-                        var findColumnFunc = function findColumnFunc(name) {
-                            return _.find(_this, function (x) {
-                                return name === x.name;
-                            });
-                        };
                         if (util.isArray(migration.add)) {
                             //init change collection
                             migration.change = [];
@@ -572,28 +564,36 @@ var H2Adapter = function () {
                                 if (err) {
                                     return cb(err);
                                 }
-                                for (var i = 0; i < migration.add.length; i++) {
-                                    var x = migration.add[i];
-                                    column = findColumnFunc.bind(columns)(x.name);
+
+                                var _loop = function _loop(_i) {
+                                    var x = migration.add[_i];
+                                    column = _.find(columns, function (y) {
+                                        return y.name === x.name;
+                                    });
                                     if (column) {
                                         //if column is primary key remove it from collection
                                         if (column.primary) {
-                                            migration.add.splice(i, 1);
-                                            i -= 1;
+                                            migration.add.splice(_i, 1);
+                                            _i -= 1;
                                         } else {
                                             //get new type
                                             newType = H2Adapter.format('%t', x);
                                             //get old type
                                             oldType = column.type1.replace(/\s+$/, '') + (column.nullable === true || column.nullable === 1 ? ' NULL' : ' NOT NULL');
                                             //remove column from collection
-                                            migration.add.splice(i, 1);
-                                            i -= 1;
+                                            migration.add.splice(_i, 1);
+                                            _i -= 1;
                                             if (newType !== oldType) {
                                                 //add column to alter collection
                                                 migration.change.push(x);
                                             }
                                         }
                                     }
+                                    i = _i;
+                                };
+
+                                for (var i = 0; i < migration.add.length; i++) {
+                                    _loop(i);
                                 }
                                 //alter table
                                 var targetTable = self.table(migration.appliesTo);
@@ -909,7 +909,11 @@ var H2Adapter = function () {
                             return callback(err);
                         }
                         var indexes = [];
-                        result.forEach(function (x) {
+                        _.forEach(result,
+                        /**
+                         * @param {{indexName:string, columnName:string}} x
+                         */
+                        function (x) {
                             var ix = indexes.find(function (y) {
                                 return y.name === x.indexName;
                             });
@@ -939,8 +943,8 @@ var H2Adapter = function () {
                     } else {
                         return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
                     }
-
-                    this.list(function (err, indexes) {
+                    var thisArg = this;
+                    thisArg.list(function (err, indexes) {
                         if (err) {
                             return callback(err);
                         }
@@ -964,7 +968,7 @@ var H2Adapter = function () {
                             });
                             if (nCols > 0) {
                                 //drop index
-                                this.drop(name, function (err) {
+                                thisArg.drop(name, function (err) {
                                     if (err) {
                                         return callback(err);
                                     }
@@ -1149,7 +1153,7 @@ var H2Adapter = function () {
                     s = 'INTEGER';
                     break;
             }
-            s += _typeof(field.nullable === 'undefined') ? ' null' : field.nullable === true || field.nullable === 1 ? ' NULL' : ' NOT NULL';
+            s += typeof field.nullable === 'undefined' ? ' null' : field.nullable === true || field.nullable === 1 ? ' NULL' : ' NOT NULL';
             return s;
         }
     }]);
@@ -1157,17 +1161,8 @@ var H2Adapter = function () {
     return H2Adapter;
 }();
 
-/**
- * @returns {string}
- * @private
- */
-
-
 exports.H2Adapter = H2Adapter;
-function getTimezone_() {
-    var offset = new Date().getTimezoneOffset();
-    return (offset <= 0 ? '+' : '-') + zeroPad(-Math.floor(offset / 60), 2) + ':' + zeroPad(offset % 60, 2);
-}
+
 
 function zeroPad(number, length) {
     number = number || 0;
@@ -1192,13 +1187,13 @@ var H2Formatter = exports.H2Formatter = function (_SqlFormatter) {
     function H2Formatter() {
         _classCallCheck(this, H2Formatter);
 
-        var _this2 = _possibleConstructorReturn(this, (H2Formatter.__proto__ || Object.getPrototypeOf(H2Formatter)).call(this));
+        var _this = _possibleConstructorReturn(this, (H2Formatter.__proto__ || Object.getPrototypeOf(H2Formatter)).call(this));
 
-        _this2.settings = {
+        _this.settings = {
             nameFormat: H2Formatter.NAME_FORMAT,
             forceAlias: true
         };
-        return _this2;
+        return _this;
     }
 
     _createClass(H2Formatter, [{

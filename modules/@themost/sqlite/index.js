@@ -1,12 +1,3 @@
-/**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
- *                     Anthi Oikonomou anthioikonomou@gmail.com
- *
- * Use of this source code is governed by an BSD-3-Clause license that can be
- * found in the LICENSE file at https://themost.io/license
- */
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -18,7 +9,16 @@ var _get = function get(object, property, receiver) { if (object === null) objec
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * MOST Web Framework 2.0 Codename Blueshift
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *                     Anthi Oikonomou anthioikonomou@gmail.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Use of this source code is governed by an BSD-3-Clause license that can be
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * found in the LICENSE file at https://themost.io/license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
 
 exports.createInstance = createInstance;
 
@@ -44,9 +44,13 @@ var _sqlite = require('sqlite3');
 
 var sqlite = _interopRequireDefault(_sqlite).default;
 
-var _utils = require('@themost/query/utils');
+var _utils = require('@themost/common/utils');
 
-var SqlUtils = _utils.SqlUtils;
+var TraceUtils = _utils.TraceUtils;
+
+var _utils2 = require('@themost/query/utils');
+
+var SqlUtils = _utils2.SqlUtils;
 
 var _query = require('@themost/query/query');
 
@@ -117,9 +121,9 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                 } else {
                     callback();
                 }
-            } catch (e) {
-                console.log('An error occured while closing database.');
-                console.log(e.message);
+            } catch (err) {
+                TraceUtils.log('An error occured while closing database.');
+                TraceUtils.log(err);
                 //call callback without error
                 callback();
             }
@@ -582,7 +586,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                 version: function version(callback) {
                     self.execute('SELECT MAX(version) AS version FROM migrations WHERE appliesTo=?', [name], function (err, result) {
                         if (err) {
-                            cb(err);return;
+                            return callback(err);
                         }
                         if (result.length === 0) callback(null, '0.0');else callback(null, result[0].version || '0.0');
                     });
@@ -614,7 +618,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                          * @param {{name:string},{cid:number},{type:string},{notnull:number},{pk:number}} x
                          */
                         var iterator = function iterator(x) {
-                            var col = { name: x.name, ordinal: x.cid, type: x.type, nullable: x.notnull ? true : false, primary: x.pk == 1 };
+                            var col = { name: x.name, ordinal: x.cid, type: x.type, nullable: x.notnull ? true : false, primary: x.pk === 1 };
                             var matches = /(\w+)\((\d+),(\d+)\)/.exec(x.type);
                             if (matches) {
                                 //extract max length attribute (e.g. integer(2,0) etc)
@@ -728,7 +732,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         callback.call(self, err);
                     } else {
                         //log statement (optional)
-                        if (process.env.NODE_ENV === 'development') console.log(util.format('SQL:%s, Parameters:%s', sql, JSON.stringify(values)));
+                        if (process.env.NODE_ENV === 'development') TraceUtils.log(util.format('SQL:%s, Parameters:%s', sql, JSON.stringify(values)));
 
                         //prepare statement - the traditional way
                         var prepared = self.prepare(sql, values);
@@ -746,7 +750,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         fn.call(self.rawConnection, prepared, [], function (err, result) {
                             if (err) {
                                 //log sql
-                                console.log(util.format('SQL Error:%s', prepared));
+                                TraceUtils.log(util.format('SQL Error:%s', prepared));
                                 callback(err);
                             } else {
                                 if (result) {
@@ -860,7 +864,8 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
                     }
 
-                    this.list(function (err, indexes) {
+                    var thisArg = this;
+                    thisArg.list(function (err, indexes) {
                         if (err) {
                             return callback(err);
                         }
@@ -884,7 +889,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                             });
                             if (nCols > 0) {
                                 //drop index
-                                this.drop(name, function (err) {
+                                thisArg.drop(name, function (err) {
                                     if (err) {
                                         return callback(err);
                                     }

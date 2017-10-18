@@ -7,13 +7,13 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-'use strict';
 import 'source-map-support/register';
 import async from 'async';
 import {_} from 'lodash';
 import util from 'util';
 import {SqlFormatter} from '@themost/query/formatter';
 import sqlite from 'sqlite3';
+import {TraceUtils} from "@themost/common/utils";
 import {SqlUtils} from "@themost/query/utils";
 import {QueryExpression,QueryField} from "@themost/query/query";
 const sqlite3 = sqlite.verbose();
@@ -73,9 +73,9 @@ export class SqliteAdapter {
             }
 
         }
-        catch (e) {
-            console.log('An error occured while closing database.');
-            console.log(e.message);
+        catch (err) {
+            TraceUtils.log('An error occured while closing database.');
+            TraceUtils.log(err);
             //call callback without error
             callback();
         }
@@ -569,7 +569,7 @@ export class SqliteAdapter {
             version:function(callback) {
                 self.execute('SELECT MAX(version) AS version FROM migrations WHERE appliesTo=?',
                     [name], function(err, result) {
-                        if (err) { cb(err); return; }
+                        if (err) { return callback(err); }
                         if (result.length === 0)
                             callback(null, '0.0');
                         else
@@ -601,7 +601,7 @@ export class SqliteAdapter {
                          * @param {{name:string},{cid:number},{type:string},{notnull:number},{pk:number}} x
                          */
                         const iterator = function(x) {
-                            const col = { name: x.name, ordinal: x.cid, type: x.type,nullable: (x.notnull ? true : false), primary: (x.pk==1) };
+                            const col = { name: x.name, ordinal: x.cid, type: x.type,nullable: (x.notnull ? true : false), primary: (x.pk === 1) };
                             const matches = /(\w+)\((\d+),(\d+)\)/.exec(x.type);
                             if (matches) {
                                 //extract max length attribute (e.g. integer(2,0) etc)
@@ -705,7 +705,7 @@ export class SqliteAdapter {
                 else {
                     //log statement (optional)
                     if (process.env.NODE_ENV==='development')
-                        console.log(util.format('SQL:%s, Parameters:%s', sql, JSON.stringify(values)));
+                        TraceUtils.log(util.format('SQL:%s, Parameters:%s', sql, JSON.stringify(values)));
 
                     //prepare statement - the traditional way
                     const prepared = self.prepare(sql, values);
@@ -724,7 +724,7 @@ export class SqliteAdapter {
                     fn.call(self.rawConnection, prepared, [] , function(err, result) {
                         if (err) {
                             //log sql
-                            console.log(util.format('SQL Error:%s', prepared));
+                            TraceUtils.log(util.format('SQL Error:%s', prepared));
                             callback(err);
                         }
                         else {
@@ -839,7 +839,8 @@ export class SqliteAdapter {
                     return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
                 }
 
-                this.list(function(err, indexes) {
+                const thisArg = this;
+                thisArg.list(function(err, indexes) {
                     if (err) { return callback(err); }
                     const ix = indexes.find(function(x) { return x.name === name; });
                     //format create index SQL statement
@@ -863,7 +864,7 @@ export class SqliteAdapter {
                         });
                         if (nCols>0) {
                             //drop index
-                            this.drop(name, function(err) {
+                            thisArg.drop(name, function(err) {
                                 if (err) { return callback(err); }
                                 //and create it
                                 self.execute(sqlCreateIndex, [], callback);

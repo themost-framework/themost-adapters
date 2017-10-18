@@ -1,0 +1,8 @@
+modules/@themost/h2/**/*.js
+modules/@themost/mssql/**/*.js
+modules/@themost/mysql/**/*.js
+modules/@themost/pg/**/*.js
+modules/@themost/oracle/**/*.js
+modules/@themost/pool/**/*.js
+modules/@themost/sqlite/**/*.js
+node_modules/

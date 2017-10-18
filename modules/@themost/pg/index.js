@@ -1,12 +1,3 @@
-/**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
- *                     Anthi Oikonomou anthioikonomou@gmail.com
- *
- * Use of this source code is governed by an BSD-3-Clause license that can be
- * found in the LICENSE file at https://themost.io/license
- */
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -16,7 +7,16 @@ exports.PGSqlFormatter = exports.PGSqlAdapter = undefined;
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * MOST Web Framework 2.0 Codename Blueshift
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *                     Anthi Oikonomou anthioikonomou@gmail.com
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Use of this source code is governed by an BSD-3-Clause license that can be
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * found in the LICENSE file at https://themost.io/license
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
 
 exports.createInstance = createInstance;
 
@@ -34,7 +34,7 @@ var util = _interopRequireDefault(_util).default;
 
 var _lodash = require('lodash');
 
-var _ = _lodash._;
+var _ = _interopRequireDefault(_lodash).default;
 
 var _formatter = require('@themost/query/formatter');
 
@@ -49,7 +49,7 @@ var _utils = require('@themost/query/utils');
 
 var SqlUtils = _utils.SqlUtils;
 
-var _utils2 = require('themost/common/utils');
+var _utils2 = require('@themost/common/utils');
 
 var TraceUtils = _utils2.TraceUtils;
 
@@ -129,7 +129,7 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                     return callback(err);
                 }
                 if (process.env.NODE_ENV === 'development') {
-                    console.log(util.format('SQL (Execution Time:%sms): Connect', new Date().getTime() - startTime));
+                    TraceUtils.log(util.format('SQL (Execution Time:%sms): Connect', new Date().getTime() - startTime));
                 }
                 //and return
                 callback(err);
@@ -175,7 +175,7 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                 this.rawConnection = null;
                 callback();
             } catch (e) {
-                console.log('An error occurred while trying to close database connection. ' + e.message);
+                TraceUtils.log('An error occurred while trying to close database connection. ' + e.message);
                 this.rawConnection = null;
                 //do nothing (do not raise an error)
                 callback();
@@ -246,11 +246,11 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                         //execute raw command
                         self.rawConnection.query(prepared, null, function (err, result) {
                             if (process.env.NODE_ENV === 'development') {
-                                console.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', new Date().getTime() - startTime, prepared, JSON.stringify(values)));
+                                TraceUtils.log(util.format('SQL (Execution Time:%sms):%s, Parameters:%s', new Date().getTime() - startTime, prepared, JSON.stringify(values)));
                             }
                             if (err) {
                                 //log sql
-                                console.log(util.format('SQL Error:%s', prepared));
+                                TraceUtils.log(util.format('SQL Error:%s', prepared));
                                 callback(err);
                             } else {
                                 callback(null, result.rows);
@@ -460,7 +460,7 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                         }
                         //format query
                         var sql = util.format("DROP VIEW \"%s\"", name);
-                        self.execute(sql, null, function (err, result) {
+                        self.execute(sql, null, function (err) {
                             if (err) {
                                 throw err;
                             }
@@ -471,7 +471,7 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                         var formatter = new PGSqlFormatter();
                         formatter.settings.nameFormat = PGSqlAdapter.NAME_FORMAT;
                         var sql = util.format("CREATE VIEW \"%s\" AS %s", name, formatter.format(query));
-                        self.execute(sql, null, function (err, result) {
+                        self.execute(sql, null, function (err) {
                             if (err) {
                                 throw err;
                             }
@@ -538,7 +538,7 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                  */
                 has_sequence: function has_sequence(callback) {
                     callback = callback || function () {};
-                    self.execute('SELECT COUNT(*) FROM information_schema.columns WHERE table_name=? AND table_schema=\'public\' AND ("column_default" ~ \'^nextval\((.*?)\)$\')', [name], function (err, result) {
+                    self.execute('SELECT COUNT(*) FROM information_schema.columns WHERE table_name=? AND table_schema=\'public\' AND ("column_default" ~ \'^nextval((.*?))$\')', [name], function (err, result) {
                         if (err) {
                             callback(err);return;
                         }
@@ -654,8 +654,6 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                     },
                     //5. Migrate target table (create or alter)
                     function (args, cb) {
-                        var _this = this;
-
                         //migration has already been applied
                         if (args[0] < 0) {
                             cb(null, args[0]);return;
@@ -666,12 +664,12 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                             var strFields = _.map(_.filter(migration.add, function (x) {
                                 return !x.oneToMany;
                             }), function (x) {
-                                return format('\"%f\" %t', x);
+                                return format('"%f" %t', x);
                             }).join(', ');
                             var key = _.find(migration.add, function (x) {
                                 return x.primary;
                             });
-                            var sql = util.format('CREATE TABLE \"%s\" (%s, PRIMARY KEY(\"%s\"))', migration.appliesTo, strFields, key.name);
+                            var sql = util.format('CREATE TABLE "%s" (%s, PRIMARY KEY("%s"))', migration.appliesTo, strFields, key.name);
                             self.execute(sql, null, function (err) {
                                 if (err) {
                                     return cb(err);
@@ -683,23 +681,23 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                             var column = void 0;
                             var fname = void 0;
                             var findColumnFunc = function findColumnFunc(name) {
-                                return _.find(_this, function (x) {
+                                return _.find(columns, function (x) {
                                     return x.columnName === name;
                                 });
                             };
                             //1. enumerate fields to delete
                             if (migration.remove) {
-                                for (var _i = 0; _i < migration.remove.length; _i++) {
-                                    fname = migration.remove[_i].name;
-                                    column = findColumnFunc.bind(columns)(fname);
+                                for (var i = 0; i < migration.remove.length; i++) {
+                                    fname = migration.remove[i].name;
+                                    column = findColumnFunc(fname);
                                     if (typeof column !== 'undefined') {
                                         var k = 1,
                                             deletedColumnName = util.format('xx%s1_%s', k.toString(), column.columnName);
-                                        while (typeof findColumnFunc.bind(columns)(deletedColumnName) !== 'undefined') {
+                                        while (typeof findColumnFunc(deletedColumnName) !== 'undefined') {
                                             k += 1;
                                             deletedColumnName = util.format('xx%s_%s', k.toString(), column.columnName);
                                         }
-                                        expressions.push(util.format('ALTER TABLE \"%s\" RENAME COLUMN \"%s\" TO %s', migration.appliesTo, column.columnName, deletedColumnName));
+                                        expressions.push(util.format('ALTER TABLE "%s" RENAME COLUMN "%s" TO %s', migration.appliesTo, column.columnName, deletedColumnName));
                                     }
                                 }
                             }
@@ -709,38 +707,38 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                                 fieldName = void 0,
                                 nullable = void 0;
                             if (migration.add) {
-                                for (var _i2 = 0; _i2 < migration.add.length; _i2++) {
+                                for (var _i = 0; _i < migration.add.length; _i++) {
                                     //get field name
-                                    fieldName = migration.add[_i2].name;
+                                    fieldName = migration.add[_i].name;
                                     //check if field exists or not
-                                    column = findColumnFunc.bind(columns)(fieldName);
+                                    column = findColumnFunc(fieldName);
                                     if (typeof column !== 'undefined') {
                                         //get original field size
                                         originalSize = column.maxLength;
                                         //and new field size
-                                        newSize = migration.add[_i2].size;
+                                        newSize = migration.add[_i].size;
                                         //add expression for modifying column (size)
                                         if (typeof newSize !== 'undefined' && originalSize !== newSize) {
                                             expressions.push(util.format('UPDATE pg_attribute SET atttypmod = %s+4 WHERE attrelid = \'"%s"\'::regclass AND attname = \'%s\';', newSize, migration.appliesTo, fieldName));
                                         }
                                         //update nullable attribute
-                                        nullable = typeof migration.add[_i2].nullable !== 'undefined' ? migration.add[_i2].nullable : true;
-                                        expressions.push(util.format('ALTER TABLE \"%s\" ALTER COLUMN \"%s\" %s', migration.appliesTo, fieldName, nullable ? 'DROP NOT NULL' : 'SET NOT NULL'));
+                                        nullable = typeof migration.add[_i].nullable !== 'undefined' ? migration.add[_i].nullable : true;
+                                        expressions.push(util.format('ALTER TABLE "%s" ALTER COLUMN "%s" %s', migration.appliesTo, fieldName, nullable ? 'DROP NOT NULL' : 'SET NOT NULL'));
                                     } else {
                                         //add expression for adding column
-                                        expressions.push(util.format('ALTER TABLE \"%s\" ADD COLUMN \"%s\" %s', migration.appliesTo, fieldName, PGSqlAdapter.formatType(migration.add[_i2])));
+                                        expressions.push(util.format('ALTER TABLE "%s" ADD COLUMN "%s" %s', migration.appliesTo, fieldName, PGSqlAdapter.formatType(migration.add[_i])));
                                     }
                                 }
                             }
 
                             //3. enumerate fields to update
                             if (migration.change) {
-                                for (var i = 0; i < migration.change.length; i++) {
-                                    var change = migration.change[i];
-                                    column = findColumnFunc.bind(columns)(change);
+                                for (var _i2 = 0; _i2 < migration.change.length; _i2++) {
+                                    var change = migration.change[_i2];
+                                    column = findColumnFunc(change);
                                     if (typeof column !== 'undefined') {
                                         //important note: Alter column operation is not supported for column types
-                                        expressions.push(util.format('ALTER TABLE \"%s\" ALTER COLUMN \"%s\" TYPE %s', migration.appliesTo, migration.add[i].name, PGSqlAdapter.formatType(migration.change[i])));
+                                        expressions.push(util.format('ALTER TABLE "%s" ALTER COLUMN "%s" TYPE %s', migration.appliesTo, migration.add[_i2].name, PGSqlAdapter.formatType(migration.change[_i2])));
                                     }
                                 }
                             }
@@ -758,7 +756,7 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
 
                         if (arg > 0) {
                             //log migration to database
-                            self.execute('INSERT INTO migrations("appliesTo", "model", "version", "description") VALUES (?,?,?,?)', [migration.appliesTo, migration.model, migration.version, migration.description], function (err, result) {
+                            self.execute('INSERT INTO migrations("appliesTo", "model", "version", "description") VALUES (?,?,?,?)', [migration.appliesTo, migration.model, migration.version, migration.description], function (err) {
                                 if (err) throw err;
                                 return cb(null, 1);
                             });
@@ -858,12 +856,12 @@ var PGSqlFormatter = exports.PGSqlFormatter = function (_SqlFormatter) {
     function PGSqlFormatter() {
         _classCallCheck(this, PGSqlFormatter);
 
-        var _this2 = _possibleConstructorReturn(this, (PGSqlFormatter.__proto__ || Object.getPrototypeOf(PGSqlFormatter)).call(this));
+        var _this = _possibleConstructorReturn(this, (PGSqlFormatter.__proto__ || Object.getPrototypeOf(PGSqlFormatter)).call(this));
 
-        _this2.settings = {
+        _this.settings = {
             nameFormat: PGSqlAdapter.NAME_FORMAT
         };
-        return _this2;
+        return _this;
     }
 
     /**
