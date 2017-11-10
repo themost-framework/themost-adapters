@@ -34,7 +34,7 @@ var util = _interopRequireDefault(_util).default;
 
 var _lodash = require('lodash');
 
-var _ = _lodash._;
+var _ = _interopRequireDefault(_lodash).default;
 
 var _formatter = require('@themost/query/formatter');
 
@@ -45,7 +45,7 @@ var _query = require('@themost/query/query');
 var QueryExpression = _query.QueryExpression;
 var QueryField = _query.QueryField;
 
-var _utils = require('themost/common/utils');
+var _utils = require('@themost/common/utils');
 
 var TraceUtils = _utils.TraceUtils;
 

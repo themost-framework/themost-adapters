@@ -30,7 +30,7 @@ var async = _interopRequireDefault(_async).default;
 
 var _lodash = require('lodash');
 
-var _ = _lodash._;
+var _ = _interopRequireDefault(_lodash).default;
 
 var _util = require('util');
 

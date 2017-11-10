@@ -10,10 +10,10 @@
 import mysql from 'mysql';
 import async from 'async';
 import util from 'util';
-import {_} from 'lodash';
+import _ from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
-import {QueryExpression,QueryField} from "@themost/query/query";
-import {TraceUtils} from "themost/common/utils";
+import {QueryExpression,QueryField} from '@themost/query/query';
+import {TraceUtils} from '@themost/common/utils';
 
 /**
  * @class

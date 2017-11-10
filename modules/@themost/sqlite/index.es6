@@ -9,7 +9,7 @@
  */
 import 'source-map-support/register';
 import async from 'async';
-import {_} from 'lodash';
+import _ from 'lodash';
 import util from 'util';
 import {SqlFormatter} from '@themost/query/formatter';
 import sqlite from 'sqlite3';

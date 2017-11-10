@@ -60,47 +60,47 @@ function build(files) {
 }
 
 // @themost/h2
-gulp.task('build:h2',build(h2Module));
+gulp.task('build:h2', ['lint:h2'],build(h2Module));
 
 
 //lint @themost/h2
 gulp.task('lint:h2', lint(h2Module));
 
 // @themost/mssql
-gulp.task('build:mssql',build(mssqlModule));
+gulp.task('build:mssql', ['lint:mssql'],build(mssqlModule));
 
 // lint @themost/mssql
-gulp.task('lint:mssql',build(mssqlModule));
+gulp.task('lint:mssql',lint(mssqlModule));
 
 // @themost/mysql
-gulp.task('build:mysql',build(mysqlModule));
+gulp.task('build:mysql', ['lint:mysql'],build(mysqlModule));
 
 // lint @themost/mysql
-gulp.task('lint:mysql',build(mysqlModule));
+gulp.task('lint:mysql',lint(mysqlModule));
 
 // @themost/oracle
-gulp.task('build:oracle',build(oracleModule));
+gulp.task('build:oracle', ['lint:oracle'],build(oracleModule));
 
 // lint @themost/oracle
-gulp.task('lint:oracle',build(oracleModule));
+gulp.task('lint:oracle',lint(oracleModule));
 
 // @themost/pg
-gulp.task('build:pg',build(pgModule));
+gulp.task('build:pg', ['lint:pg'],build(pgModule));
 
 // lint @themost/pg
-gulp.task('lint:pg',build(pgModule));
+gulp.task('lint:pg',lint(pgModule));
 
 // @themost/pool
-gulp.task('build:pool',build(poolModule));
+gulp.task('build:pool', ['lint:pool'],build(poolModule));
 
 // lint @themost/pool
-gulp.task('lint:pool',build(poolModule));
+gulp.task('lint:pool',lint(poolModule));
 
 // @themost/sqlite
-gulp.task('build:sqlite',build(sqliteModule));
+gulp.task('build:sqlite', ['lint:sqlite'],build(sqliteModule));
 
 // lint @themost/sqlite
-gulp.task('lint:sqlite',build(sqliteModule));
+gulp.task('lint:sqlite',lint(sqliteModule));
 
 
 
