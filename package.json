@@ -1,6 +1,6 @@
 {
   "name": "themost-adapters-src",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.4",
   "private": true,
   "description": "MOST Web Framework 2.0 Data Adapters",
   "main": "index.js",

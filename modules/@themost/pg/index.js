@@ -538,7 +538,7 @@ var PGSqlAdapter = exports.PGSqlAdapter = function () {
                  */
                 has_sequence: function has_sequence(callback) {
                     callback = callback || function () {};
-                    self.execute('SELECT COUNT(*) FROM information_schema.columns WHERE table_name=? AND table_schema=\'public\' AND ("column_default" ~ \'^nextval((.*?))$\')', [name], function (err, result) {
+                    self.execute('SELECT COUNT(*) FROM information_schema.columns WHERE table_name=? AND table_schema=\'public\' AND ("column_default" ~ \'^nextval\\((.*?)\\)$\')', [name], function (err, result) {
                         if (err) {
                             callback(err);return;
                         }
