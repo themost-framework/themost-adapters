@@ -1,6 +1,6 @@
 {
   "name": "@themost/pool",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Most Web Framework Data Adapter Pool Extension",
   "main": "index.js",
   "repository": {

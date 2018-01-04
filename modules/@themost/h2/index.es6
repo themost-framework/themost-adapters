@@ -344,7 +344,7 @@ export class H2Adapter {
                         startTime = new Date().getTime();
                     }
                     //execute raw command
-                    const str = SqlUtils.prepare(sql, values);
+                    const str = SqlUtils.format(sql, values);
                     self.rawConnection.conn.createStatement(function(err, statement) {
                         if (err) { return callback(err); }
                         let executeQuery = statement.executeQuery;

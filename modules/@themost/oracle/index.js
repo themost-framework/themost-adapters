@@ -166,7 +166,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
     }, {
         key: 'prepare',
         value: function prepare(query, values) {
-            return SqlUtils.prepare(query, values);
+            return SqlUtils.format(query, values);
         }
     }, {
         key: 'executeInTransaction',

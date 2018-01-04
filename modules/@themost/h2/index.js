@@ -412,7 +412,7 @@ var H2Adapter = function () {
                             startTime = new Date().getTime();
                         }
                         //execute raw command
-                        var str = SqlUtils.prepare(sql, values);
+                        var str = SqlUtils.format(sql, values);
                         self.rawConnection.conn.createStatement(function (err, statement) {
                             if (err) {
                                 return callback(err);

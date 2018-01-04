@@ -1,6 +1,6 @@
 {
   "name": "@themost/pg",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "MOST Web Framework PostgreSQL Adapter",
   "main": "index.js",
   "repository": {
