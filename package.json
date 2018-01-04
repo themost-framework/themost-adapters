@@ -33,7 +33,7 @@
   "dependencies": {
     "async": "0.2.10",
     "lodash": "^4.17.4",
-    "moment": "~2.8.4",
+    "moment": "~2.20.1",
     "source-map-support": "^0.4.11"
   },
   "devDependencies": {
