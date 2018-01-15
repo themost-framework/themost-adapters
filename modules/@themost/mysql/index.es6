@@ -654,12 +654,15 @@ export class MySqlAdapter {
                 }
                 const formatter = new MySqlFormatter();
                 const strTable = formatter.escapeName(name);
-                //generate SQL statement
-                const sql = _.map(fields, function(x) {
+                const statements = _.map(fields, function(x) {
                     return MySqlAdapter.format('ALTER TABLE ' + strTable + ' ADD COLUMN `%f` %t', x);
-                }).join(';');
-                self.execute(sql, [], function(err) {
-                    callback(err);
+                });
+                return async.eachSeries(statements, function(sql, cb) {
+                    self.execute(sql, [], function(err) {
+                        return cb(err);
+                    });
+                }, function(err) {
+                    return callback(err);
                 });
             },
             /**
@@ -681,12 +684,15 @@ export class MySqlAdapter {
                 }
                 const formatter = new MySqlFormatter();
                 const strTable = formatter.escapeName(name);
-                //generate SQL statement
-                const sql = _.map(fields, function(x) {
+                const statements = _.map(fields, function(x) {
                     return MySqlAdapter.format('ALTER TABLE ' + strTable + ' MODIFY COLUMN `%f` %t', x);
-                }).join(';');
-                self.execute(sql, [], function(err) {
-                    callback(err);
+                });
+                return async.eachSeries(statements, function(sql, cb) {
+                    self.execute(sql, [], function(err) {
+                        return cb(err);
+                    });
+                }, function(err) {
+                    return callback(err);
                 });
             }
         };
