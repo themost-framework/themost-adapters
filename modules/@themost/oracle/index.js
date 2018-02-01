@@ -48,10 +48,6 @@ var _utils2 = require('@themost/query/utils');
 
 var SqlUtils = _utils2.SqlUtils;
 
-var _index = require('../mysql/index');
-
-var MySqlAdapter = _index.MySqlAdapter;
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -60,11 +56,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var DateTimeRegex = /^(\d{4})(?:-?W(\d+)(?:-?(\d+)D?)?|(?:-(\d+))?-(\d+))(?:[T ](\d+):(\d+)(?::(\d+)(?:\.(\d+))?)?)?(?:Z(-?\d*))?$/;
+
 /**
  * @class
  * @augments DataAdapter
  * @property {string} connectString
  */
+
 var OracleAdapter = exports.OracleAdapter = function () {
     /**
      * @constructor
@@ -989,6 +988,9 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
             }
             if (value instanceof Date) {
                 return util.format('TO_TIMESTAMP_TZ(%s, \'YYYY-MM-DD HH24:MI:SS.FF3TZH:TZM\')', this.escapeDate(value));
+            }
+            if (typeof value === 'string' && DateTimeRegex.test(value)) {
+                return util.format('TO_TIMESTAMP_TZ(%s, \'YYYY-MM-DD HH24:MI:SS.FF3TZH:TZM\')', this.escapeDate(new Date(value)));
             }
             var res = _get(OracleFormatter.prototype.__proto__ || Object.getPrototypeOf(OracleFormatter.prototype), 'escape', this).bind(this)(value, unquoted);
             if (typeof value === 'string') {

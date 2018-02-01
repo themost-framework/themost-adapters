@@ -14,7 +14,9 @@ import _ from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
 import {TraceUtils} from "@themost/common/utils";
 import {SqlUtils} from "@themost/query/utils";
-import {MySqlAdapter} from "../mysql/index";
+
+const DateTimeRegex = /^(\d{4})(?:-?W(\d+)(?:-?(\d+)D?)?|(?:-(\d+))?-(\d+))(?:[T ](\d+):(\d+)(?::(\d+)(?:\.(\d+))?)?)?(?:Z(-?\d*))?$/;
+
 
 /**
  * @class
@@ -892,6 +894,9 @@ export class OracleFormatter extends SqlFormatter {
         if (typeof value === 'boolean') { return value ? '1' : '0'; }
         if (value instanceof Date) {
             return util.format('TO_TIMESTAMP_TZ(%s, \'YYYY-MM-DD HH24:MI:SS.FF3TZH:TZM\')', this.escapeDate(value));
+        }
+        if (typeof value === 'string' && DateTimeRegex.test(value)) {
+            return util.format('TO_TIMESTAMP_TZ(%s, \'YYYY-MM-DD HH24:MI:SS.FF3TZH:TZM\')', this.escapeDate(new Date(value)));
         }
         let res = super.escape.bind(this)(value, unquoted);
         if (typeof value === 'string') {
