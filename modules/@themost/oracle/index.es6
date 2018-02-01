@@ -871,7 +871,8 @@ export class OracleFormatter extends SqlFormatter {
         super();
         this.settings = {
             nameFormat:OracleFormatter.NAME_FORMAT,
-            forceAlias:true
+            forceAlias:true,
+            useAliasKeyword: false
         };
     }
 

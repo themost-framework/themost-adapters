@@ -961,7 +961,8 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
 
         _this.settings = {
             nameFormat: OracleFormatter.NAME_FORMAT,
-            forceAlias: true
+            forceAlias: true,
+            useAliasKeyword: false
         };
         return _this;
     }
