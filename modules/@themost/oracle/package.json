@@ -1,6 +1,6 @@
 {
   "name": "@themost/oracle",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "MOST Web Framework Oracle Data Adapter",
   "main": "index.js",
   "scripts": {
@@ -25,10 +25,10 @@
   },
   "homepage": "https://github.com/themost-framework/themost-adapters",
   "dependencies": {
-      "@themost/query": "^2.0.0-alpha.1",
-      "@themost/common": "^2.0.0-alpha.1",
-    "async": "^1.4.2",
-    "oracledb": "^1.0.0",
-    "lodash": "^4.17.4"
+    "@themost/common": "^2.0.6",
+    "@themost/query": "^2.0.5",
+    "async": "^1.5.2",
+    "lodash": "^4.17.4",
+    "oracledb": "^2.0.15"
   }
 }

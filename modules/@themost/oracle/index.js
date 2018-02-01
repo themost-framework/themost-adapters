@@ -48,6 +48,10 @@ var _utils2 = require('@themost/query/utils');
 
 var SqlUtils = _utils2.SqlUtils;
 
+var _index = require('../mysql/index');
+
+var MySqlAdapter = _index.MySqlAdapter;
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -137,22 +141,19 @@ var OracleAdapter = exports.OracleAdapter = function () {
                 if (self.rawConnection) {
                     //close connection
                     self.rawConnection.release(function (err) {
-                        if (process.env.NODE_ENV === 'development') {
-                            TraceUtils.log('An error occured while closing database.');
-                            TraceUtils.log(err.message);
-                            if (err.stack) {
-                                TraceUtils.log(err.stack);
-                            }
+                        if (err) {
+                            TraceUtils.debug('An error occured while closing database connection.');
+                            TraceUtils.debug(err);
                         }
                         //and finally return
-                        callback();
+                        return callback();
                     });
                 } else {
-                    callback();
+                    return callback();
                 }
-            } catch (e) {
-                TraceUtils.log('An error occured while closing database.');
-                TraceUtils.log(e.message);
+            } catch (err) {
+                TraceUtils.debug('An error occured while closing database connection');
+                TraceUtils.debug(err);
                 //call callback without error
                 callback();
             }
@@ -336,19 +337,19 @@ var OracleAdapter = exports.OracleAdapter = function () {
                         oldType = void 0;
 
                     //1. columns to be removed
-                    if (util.isArray(migration.remove)) {
+                    if (_.isArray(migration.remove)) {
                         if (migration.remove.length > 0) {
                             return cb(new Error('Data migration remove operation is not supported by this adapter.'));
                         }
                     }
                     //1. columns to be changed
-                    if (util.isArray(migration.change)) {
+                    if (_.isArray(migration.change)) {
                         if (migration.change.length > 0) {
                             return cb(new Error('Data migration change operation is not supported by this adapter. Use add collection instead.'));
                         }
                     }
 
-                    if (util.isArray(migration.add)) {
+                    if (_.isArray(migration.add)) {
                         //init change collection
                         migration.change = [];
                         //get table columns
@@ -605,7 +606,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
                 create: function create(fields, callback) {
                     callback = callback || function () {};
                     fields = fields || [];
-                    if (!util.isArray(fields)) {
+                    if (!_.isArray(fields)) {
                         return callback(new Error('Invalid argument type. Expected Array.'));
                     }
                     if (fields.length === 0) {
@@ -626,7 +627,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
                     }
                     strTable += formatter.escapeName(table);
                     //add primary key constraint
-                    var strPKFields = _.map(_.find(fields, function (x) {
+                    var strPKFields = _.map(_.filter(fields, function (x) {
                         return x.primary === true || x.primary === 1;
                     }), function (x) {
                         return formatter.escapeName(x.name);
@@ -647,7 +648,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
                 add: function add(fields, callback) {
                     callback = callback || function () {};
                     fields = fields || [];
-                    if (!util.isArray(fields)) {
+                    if (!_.isArray(fields)) {
                         //invalid argument exception
                         return callback(new Error('Invalid argument type. Expected Array.'));
                     }
@@ -681,7 +682,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
                 change: function change(fields, callback) {
                     callback = callback || function () {};
                     fields = fields || [];
-                    if (!util.isArray(fields)) {
+                    if (!_.isArray(fields)) {
                         //invalid argument exception
                         return callback(new Error('Invalid argument type. Expected Array.'));
                     }
@@ -1044,6 +1045,17 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
                 }
             }
             return sql;
+        }
+        /**
+         * Implements [a & b] bitwise and expression formatter.
+         * @param p0 {*}
+         * @param p1 {*}
+         */
+
+    }, {
+        key: '$bit',
+        value: function $bit(p0, p1) {
+            return util.format('BITAND(%s, %s)', this.escape(p0), this.escape(p1));
         }
 
         /**

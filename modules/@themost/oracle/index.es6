@@ -14,6 +14,7 @@ import _ from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
 import {TraceUtils} from "@themost/common/utils";
 import {SqlUtils} from "@themost/query/utils";
+import {MySqlAdapter} from "../mysql/index";
 
 /**
  * @class
@@ -83,23 +84,22 @@ export class OracleAdapter {
             {
                 //close connection
                 self.rawConnection.release(function(err) {
-                    if (process.env.NODE_ENV === 'development') {
-                        TraceUtils.log('An error occured while closing database.');
-                        TraceUtils.log(err.message);
-                        if (err.stack) { TraceUtils.log(err.stack); }
+                    if (err) {
+                        TraceUtils.debug('An error occured while closing database connection.');
+                        TraceUtils.debug(err);
                     }
                     //and finally return
-                    callback();
+                    return callback();
                 });
             }
             else {
-                callback();
+                return callback();
             }
 
         }
-        catch (e) {
-            TraceUtils.log('An error occured while closing database.');
-            TraceUtils.log(e.message);
+        catch (err) {
+            TraceUtils.debug('An error occured while closing database connection');
+            TraceUtils.debug(err);
             //call callback without error
             callback();
         }
@@ -341,19 +341,19 @@ export class OracleAdapter {
                     let column, newType, oldType;
 
                     //1. columns to be removed
-                    if (util.isArray(migration.remove)) {
+                    if (_.isArray(migration.remove)) {
                         if (migration.remove.length>0) {
                             return cb(new Error('Data migration remove operation is not supported by this adapter.'));
                         }
                     }
                     //1. columns to be changed
-                    if (util.isArray(migration.change)) {
+                    if (_.isArray(migration.change)) {
                         if (migration.change.length>0) {
                             return cb(new Error('Data migration change operation is not supported by this adapter. Use add collection instead.'));
                         }
                     }
 
-                    if (util.isArray(migration.add)) {
+                    if (_.isArray(migration.add)) {
                         //init change collection
                         migration.change = [];
                         //get table columns
@@ -601,7 +601,7 @@ export class OracleAdapter {
             create: function(fields, callback) {
                 callback = callback || function() {};
                 fields = fields || [];
-                if (!util.isArray(fields)) {
+                if (!_.isArray(fields)) {
                     return callback(new Error('Invalid argument type. Expected Array.'));
                 }
                 if (fields.length === 0) {
@@ -622,9 +622,10 @@ export class OracleAdapter {
                 if (typeof owner !== 'undefined') { strTable = formatter.escapeName(owner) + "."; }
                 strTable += formatter.escapeName(table);
                 //add primary key constraint
-                const strPKFields = _.map(_.find(fields, (x) => { return (x.primary === true || x.primary === 1); }),
-                    (x) => {
-                    return formatter.escapeName(x.name);
+                const strPKFields = _.map(_.filter(fields, (x) => {
+                        return (x.primary === true || x.primary === 1);
+                    }), (x) => {
+                        return formatter.escapeName(x.name);
                 }).join(', ');
                 if (strPKFields.length>0) {
                     strFields += ', ' + util.format('CONSTRAINT "%s_pk" PRIMARY KEY (%s)', table, strPKFields);
@@ -642,7 +643,7 @@ export class OracleAdapter {
             add:function(fields, callback) {
                 callback = callback || function() {};
                 fields = fields || [];
-                if (!util.isArray(fields)) {
+                if (!_.isArray(fields)) {
                     //invalid argument exception
                     return callback(new Error('Invalid argument type. Expected Array.'));
                 }
@@ -674,7 +675,7 @@ export class OracleAdapter {
             change:function(fields, callback) {
                 callback = callback || function() {};
                 fields = fields || [];
-                if (!util.isArray(fields)) {
+                if (!_.isArray(fields)) {
                     //invalid argument exception
                     return callback(new Error('Invalid argument type. Expected Array.'));
                 }
@@ -941,6 +942,15 @@ export class OracleFormatter extends SqlFormatter {
             }
         }
         return sql;
+    }
+    /**
+     * Implements [a & b] bitwise and expression formatter.
+     * @param p0 {*}
+     * @param p1 {*}
+     */
+    $bit(p0, p1)
+    {
+        return util.format('BITAND(%s, %s)', this.escape(p0), this.escape(p1));
     }
 
     /**
