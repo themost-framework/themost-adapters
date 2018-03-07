@@ -118,6 +118,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
             if (self.rawConnection) {
                 callback();
             } else {
+                TraceUtils.debug('Opening database connection');
                 oracledb.getConnection({
                     user: this.options.user,
                     password: this.options.password,
@@ -126,6 +127,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
                     if (err) {
                         return callback(err);
                     }
+                    TraceUtils.debug('Open database connection');
                     self.rawConnection = connection;
                     callback();
                 });
@@ -138,12 +140,16 @@ var OracleAdapter = exports.OracleAdapter = function () {
             callback = callback || function () {};
             try {
                 if (self.rawConnection) {
+                    TraceUtils.debug('Closing database connection');
                     //close connection
                     self.rawConnection.release(function (err) {
                         if (err) {
                             TraceUtils.debug('An error occured while closing database connection.');
                             TraceUtils.debug(err);
                         }
+                        TraceUtils.debug('Close database connection');
+                        //destroy raw connection
+                        self.rawConnection = null;
                         //and finally return
                         return callback();
                     });
