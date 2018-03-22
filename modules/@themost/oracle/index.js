@@ -43,7 +43,6 @@ var SqlFormatter = _formatter.SqlFormatter;
 var _utils = require('@themost/common/utils');
 
 var TraceUtils = _utils.TraceUtils;
-var RandomUtils = _utils.RandomUtils;
 
 var _utils2 = require('@themost/query/utils');
 
