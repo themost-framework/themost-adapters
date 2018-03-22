@@ -43,6 +43,7 @@ var SqlFormatter = _formatter.SqlFormatter;
 var _utils = require('@themost/common/utils');
 
 var TraceUtils = _utils.TraceUtils;
+var RandomUtils = _utils.RandomUtils;
 
 var _utils2 = require('@themost/query/utils');
 
@@ -453,6 +454,9 @@ var OracleAdapter = exports.OracleAdapter = function () {
             var self = this;
             //format sequence name ([entity]_[attribute]_seg e.g. user_id_seq)
             var name = entity + "_" + attribute + "_seq";
+            if (name.length > 30) {
+                name = entity.substring(0, 26) + "_seq";
+            }
             //search for sequence
             self.execute('SELECT SEQUENCE_OWNER,SEQUENCE_NAME FROM ALL_SEQUENCES WHERE "SEQUENCE_NAME" = ?', [name], function (err, result) {
                 if (err) {

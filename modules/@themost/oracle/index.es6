@@ -457,7 +457,11 @@ export class OracleAdapter {
 
         const self = this;
         //format sequence name ([entity]_[attribute]_seg e.g. user_id_seq)
-        const name = entity + "_" + attribute + "_seq";
+        let name = entity + "_" + attribute + "_seq";
+        if (name.length>30)
+        {
+            name=entity.substring(0,26) + "_seq";
+        }
         //search for sequence
         self.execute('SELECT SEQUENCE_OWNER,SEQUENCE_NAME FROM ALL_SEQUENCES WHERE "SEQUENCE_NAME" = ?', [name], function(err, result) {
             if (err) { return callback(err); }
