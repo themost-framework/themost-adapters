@@ -828,11 +828,6 @@ var OracleAdapter = exports.OracleAdapter = function () {
                     //format query expression or any object that may be act as query expression
                     var formatter = new OracleFormatter();
                     sql = formatter.format(query);
-                    //if query is fixed (an SQL expression without any table definition)
-                    if (query.$fixed === true) {
-                        //use dymmy oracle table DUAL
-                        sql += ' FROM DUAL';
-                    }
                 }
                 //validate sql statement
                 if (typeof sql !== 'string') {
@@ -1036,13 +1031,29 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
         }
 
         /**
-         *
-         * @param {QueryExpression} obj
+         * Formats a fixed query expression where select fields are constants e.g. SELECT 1 AS `id`,'John' AS `givenName` etc
+         * @param obj {QueryExpression|*}
          * @returns {string}
          */
 
     }, {
+        key: 'formatFixedSelect',
+        value: function formatFixedSelect(obj) {
+            var self = this;
+            var fields = obj.fields();
+            return 'SELECT ' + _.map(fields, function (x) {
+                return self.format(x, '%f');
+            }).join(', ') + ' FROM DUAL';
+        }
+    }, {
         key: 'formatLimitSelect',
+
+
+        /**
+         *
+         * @param {QueryExpression} obj
+         * @returns {string}
+         */
         value: function formatLimitSelect(obj) {
 
             var sql = this.formatSelect(obj);
