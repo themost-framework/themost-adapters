@@ -817,11 +817,6 @@ export class OracleAdapter {
                 //format query expression or any object that may be act as query expression
                 const formatter = new OracleFormatter();
                 sql = formatter.format(query);
-                //if query is fixed (an SQL expression without any table definition)
-                if (query.$fixed === true) {
-                    //use dymmy oracle table DUAL
-                    sql += ' FROM DUAL';
-                }
             }
             //validate sql statement
             if (typeof sql !== 'string') {
@@ -940,6 +935,18 @@ export class OracleFormatter extends SqlFormatter {
         const offset = (new Date()).getTimezoneOffset(), timezone = (offset<=0 ? '+' : '-') + zeroPad(-Math.floor(offset/60),2) + ':' + zeroPad(offset%60,2);
         return "'" + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + "." + zeroPad(val.getMilliseconds(), 3) + timezone + "'";
     }
+
+
+    /**
+     * Formats a fixed query expression where select fields are constants e.g. SELECT 1 AS `id`,'John' AS `givenName` etc
+     * @param obj {QueryExpression|*}
+     * @returns {string}
+     */
+    formatFixedSelect(obj) {
+        var self = this;
+        var fields = obj.fields();
+        return 'SELECT ' + _.map(fields, function(x) { return self.format(x,'%f'); }).join(', ') + ' FROM DUAL';
+    };
 
     /**
      *
