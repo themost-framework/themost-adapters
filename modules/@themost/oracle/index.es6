@@ -936,6 +936,7 @@ export class OracleFormatter extends SqlFormatter {
         return "'" + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + "." + zeroPad(val.getMilliseconds(), 3) + timezone + "'";
     }
 
+
     /**
      * Formats a fixed query expression where select fields are constants e.g. SELECT 1 AS `id`,'John' AS `givenName` etc
      * @param obj {QueryExpression|*}
