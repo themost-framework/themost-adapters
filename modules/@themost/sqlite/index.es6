@@ -356,7 +356,7 @@ export class SqliteAdapter {
 
                             for (let i = 0; i < migration.change.length; i++) {
                                 let x = migration.change[i];
-                                column = _.find(function(y) { return y.name === x.name; });
+                                column = _.find(columns, function(y) { return y.name === x.name; });
                                 if (column) {
                                     if (!column.primary) {
                                         //validate new column type (e.g. TEXT(120,0) NOT NULL)
@@ -388,7 +388,7 @@ export class SqliteAdapter {
 
                         for (let i = 0; i < migration.add.length; i++) {
                             let x = migration.add[i];
-                            column = _.find(function(y) { return (y.name === x.name); });
+                            column = _.find(columns, function(y) { return (y.name === x.name); });
                             if (column) {
                                 if (column.primary) {
                                     migration.add.splice(i, 1);
@@ -807,11 +807,12 @@ export class SqliteAdapter {
                         };
                     });
                     async.eachSeries(indexes, function(index, cb) {
-                        self.execute(util.format('PRAGMA INDEX_INFO(`%s`)', index.name), function(err, columns) {
+                        self.execute(util.format('PRAGMA INDEX_INFO(`%s`)', index.name), null, function(err, columns) {
                            if (err) { return cb(err); }
-                            index.columns = columns.map(function(x) {
+                            index.columns = _.map(columns, function(x) {
                                 return x.name;
                             });
+                           return cb();
                         });
                     }, function(err) {
                         if (err) {

@@ -359,7 +359,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         if (migration.change > 0) {
                             var _loop2 = function _loop2(_i3) {
                                 var x = migration.change[_i3];
-                                column = _.find(function (y) {
+                                column = _.find(columns, function (y) {
                                     return y.name === x.name;
                                 });
                                 if (column) {
@@ -394,7 +394,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                     if (util.isArray(migration.add)) {
                         var _loop3 = function _loop3(_i5) {
                             var x = migration.add[_i5];
-                            column = _.find(function (y) {
+                            column = _.find(columns, function (y) {
                                 return y.name === x.name;
                             });
                             if (column) {
@@ -832,13 +832,14 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                             };
                         });
                         async.eachSeries(indexes, function (index, cb) {
-                            self.execute(util.format('PRAGMA INDEX_INFO(`%s`)', index.name), function (err, columns) {
+                            self.execute(util.format('PRAGMA INDEX_INFO(`%s`)', index.name), null, function (err, columns) {
                                 if (err) {
                                     return cb(err);
                                 }
-                                index.columns = columns.map(function (x) {
+                                index.columns = _.map(columns, function (x) {
                                     return x.name;
                                 });
+                                return cb();
                             });
                         }, function (err) {
                             if (err) {
