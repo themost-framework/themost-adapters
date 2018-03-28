@@ -12,10 +12,8 @@ import async from 'async';
 import util from 'util';
 import _ from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
-import {TraceUtils} from "@themost/common/utils";
+import {TraceUtils,LangUtils} from "@themost/common/utils";
 import {SqlUtils} from "@themost/query/utils";
-
-const DateTimeRegex = /^(\d{4})(?:-?W(\d+)(?:-?(\d+)D?)?|(?:-(\d+))?-(\d+))(?:[T ](\d+):(\d+)(?::(\d+)(?:\.(\d+))?)?)?(?:Z(-?\d*))?$/;
 
 
 /**
@@ -900,7 +898,7 @@ export class OracleFormatter extends SqlFormatter {
         if (value instanceof Date) {
             return util.format('TO_TIMESTAMP_TZ(%s, \'YYYY-MM-DD HH24:MI:SS.FF3TZH:TZM\')', this.escapeDate(value));
         }
-        if (typeof value === 'string' && DateTimeRegex.test(value)) {
+        if (typeof value === 'string' && LangUtils.isDate(value)) {
             return util.format('TO_TIMESTAMP_TZ(%s, \'YYYY-MM-DD HH24:MI:SS.FF3TZH:TZM\')', this.escapeDate(new Date(value)));
         }
         let res = super.escape.bind(this)(value, unquoted);
