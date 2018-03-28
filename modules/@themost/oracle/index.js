@@ -43,6 +43,7 @@ var SqlFormatter = _formatter.SqlFormatter;
 var _utils = require('@themost/common/utils');
 
 var TraceUtils = _utils.TraceUtils;
+var LangUtils = _utils.LangUtils;
 
 var _utils2 = require('@themost/query/utils');
 
@@ -56,14 +57,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var DateTimeRegex = /^(\d{4})(?:-?W(\d+)(?:-?(\d+)D?)?|(?:-(\d+))?-(\d+))(?:[T ](\d+):(\d+)(?::(\d+)(?:\.(\d+))?)?)?(?:Z(-?\d*))?$/;
-
 /**
  * @class
  * @augments DataAdapter
  * @property {string} connectString
  */
-
 var OracleAdapter = exports.OracleAdapter = function () {
     /**
      * @constructor
@@ -993,7 +991,7 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
             if (value instanceof Date) {
                 return util.format('TO_TIMESTAMP_TZ(%s, \'YYYY-MM-DD HH24:MI:SS.FF3TZH:TZM\')', this.escapeDate(value));
             }
-            if (typeof value === 'string' && DateTimeRegex.test(value)) {
+            if (typeof value === 'string' && LangUtils.isDate(value)) {
                 return util.format('TO_TIMESTAMP_TZ(%s, \'YYYY-MM-DD HH24:MI:SS.FF3TZH:TZM\')', this.escapeDate(new Date(value)));
             }
             var res = _get(OracleFormatter.prototype.__proto__ || Object.getPrototypeOf(OracleFormatter.prototype), 'escape', this).bind(this)(value, unquoted);

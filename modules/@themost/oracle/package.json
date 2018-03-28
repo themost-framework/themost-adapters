@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/themost-framework/themost-adapters",
   "dependencies": {
-    "@themost/common": "^2.0.6",
+    "@themost/common": "^2.0.11",
     "@themost/query": "^2.0.5",
     "async": "^1.5.2",
     "lodash": "^4.17.4",
