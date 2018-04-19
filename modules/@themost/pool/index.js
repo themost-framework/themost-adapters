@@ -770,7 +770,7 @@ function createInstance(options) {
     var pool = DataPool[pools][name];
     if (typeof pool === 'undefined' || pool === null) {
         //create new pool with the name specified in options
-        DataPool.pools[name] = new DataPool(options);
+        DataPool[pools][name] = new DataPool(options);
     }
     return new PoolAdapter({ pool: name });
 }

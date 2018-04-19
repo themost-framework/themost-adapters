@@ -49,6 +49,10 @@ var _utils2 = require('@themost/query/utils');
 
 var SqlUtils = _utils2.SqlUtils;
 
+var _query = require('../../../../themost/modules/@themost/query/query');
+
+var QueryField = _query.QueryField;
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -1057,13 +1061,48 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
          */
         value: function formatLimitSelect(obj) {
 
-            var sql = this.formatSelect(obj);
-            if (obj.$take) {
-                if (obj.$skip) {
-                    return 'SELECT * FROM ( ' + sql + ' ) where ROWNUM <= ' + (obj.$take + obj.$skip).toString() + ' ROWNUM > ' + obj.$skip.toString();
-                } else {
-                    return 'SELECT * FROM ( ' + sql + ' ) where ROWNUM <= ' + obj.$take.toString();
+            var sql = void 0;
+            var self = this;
+            var take = parseInt(obj.$take) || 0;
+            var skip = parseInt(obj.$skip) || 0;
+            if (take <= 0) {
+                sql = self.formatSelect(obj);
+            } else {
+                //add row_number with order
+                var keys = Object.keys(obj.$select);
+                if (keys.length === 0) throw new Error('Entity is missing');
+                var selectFields = obj.$select[keys[0]];
+                var order = obj.$order;
+                self.$row_index = function () {
+                    var args = Array.prototype.slice.call(arguments);
+                    return util.format('ROW_NUMBER() OVER(%s)', args && args.length ? this.format(args, '%o') : 'ORDER BY NULL');
+                };
+                selectFields.push({
+                    "__RowIndex": {
+                        $row_index: order
+                    }
+                });
+                if (order) {
+                    delete obj.$order;
                 }
+                var subQuery = self.formatSelect(obj);
+                if (order) {
+                    obj.$order = order;
+                }
+                //delete row index field
+                selectFields.pop();
+                var fields = [];
+                _.forEach(selectFields, function (x) {
+                    if (typeof x === 'string') {
+                        fields.push(new QueryField(x));
+                    } else {
+                        var field = _.assign(new QueryField(), x);
+                        fields.push(field.as() || field.name());
+                    }
+                });
+                sql = util.format('SELECT %s FROM (%s) t0 WHERE "__RowIndex" BETWEEN %s AND %s', _.map(fields, function (x) {
+                    return self.format(x, '%f');
+                }).join(', '), subQuery, skip + 1, skip + take);
             }
             return sql;
         }

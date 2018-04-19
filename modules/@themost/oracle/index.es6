@@ -14,6 +14,7 @@ import _ from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
 import {TraceUtils,LangUtils} from "@themost/common/utils";
 import {SqlUtils} from "@themost/query/utils";
+import {QueryField} from "../../../../themost/modules/@themost/query/query";
 
 
 /**
@@ -953,16 +954,56 @@ export class OracleFormatter extends SqlFormatter {
      */
     formatLimitSelect(obj) {
 
-        const sql=this.formatSelect(obj);
-        if (obj.$take) {
-            if (obj.$skip) {
-                return 'SELECT * FROM ( ' +  sql + ' ) where ROWNUM <= ' + (obj.$take + obj.$skip).toString() + ' ROWNUM > ' + obj.$skip.toString();
+        let sql;
+        const self=this;
+        let take = parseInt(obj.$take) || 0;
+        let skip = parseInt(obj.$skip) || 0;
+        if (take<=0) {
+            sql=self.formatSelect(obj);
+        }
+        else {
+            //add row_number with order
+            const keys = Object.keys(obj.$select);
+            if (keys.length === 0)
+                throw new Error('Entity is missing');
+            //get select fields
+            let selectFields = obj.$select[keys[0]];
+            //get order
+            let order = obj.$order;
+            //add row index field
+            selectFields.push({
+                "__RowIndex": {
+                  $row_index: order
+                }
+            });
+            //remove order
+            if (order) {
+                delete obj.$order;
             }
-            else {
-                return 'SELECT * FROM ( ' +  sql + ' ) where ROWNUM <= ' + obj.$take.toString();
+            //get sub query
+            const subQuery = self.formatSelect(obj);
+            //add order again
+            if (order) {
+                obj.$order = order;
             }
+            //remove row index field
+            selectFields.pop();
+            const fields = [];
+            _.forEach(selectFields, (x) => {
+                if (typeof x === 'string') {
+                    fields.push(new QueryField(x));
+                }
+                else {
+                    let field = _.assign(new QueryField(), x);
+                    fields.push(field.as() || field.name());
+                }
+            });
+            sql = util.format('SELECT %s FROM (%s) t0 WHERE "__RowIndex" BETWEEN %s AND %s', _.map(fields, (x) => {
+                return self.format(x, '%f');
+            }).join(', '), subQuery, skip + 1, skip + take);
         }
         return sql;
+
     }
     /**
      * Implements [a & b] bitwise and expression formatter.
@@ -1025,6 +1066,15 @@ export class OracleFormatter extends SqlFormatter {
      */
     $length(p0) {
         return util.format('LENGTH(%s)', this.escape(p0));
+    }
+
+    /**
+     * @param {...*} p0
+     * @return {*}
+     */
+    $row_index(p0) {
+        let args = Array.prototype.slice.call(arguments);
+        return util.format('ROW_NUMBER() OVER(%s)', (args && args.length) ? this.format(args, '%o') : 'ORDER BY NULL');
     }
 
     $ceiling(p0) {
