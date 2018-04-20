@@ -49,7 +49,7 @@ var _utils2 = require('@themost/query/utils');
 
 var SqlUtils = _utils2.SqlUtils;
 
-var _query = require('../../../../themost/modules/@themost/query/query');
+var _query = require('@themost/query/query');
 
 var QueryField = _query.QueryField;
 
@@ -1071,25 +1071,27 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
                 //add row_number with order
                 var keys = Object.keys(obj.$select);
                 if (keys.length === 0) throw new Error('Entity is missing');
+                //get select fields
                 var selectFields = obj.$select[keys[0]];
+                //get order
                 var order = obj.$order;
-                self.$row_index = function () {
-                    var args = Array.prototype.slice.call(arguments);
-                    return util.format('ROW_NUMBER() OVER(%s)', args && args.length ? this.format(args, '%o') : 'ORDER BY NULL');
-                };
+                //add row index field
                 selectFields.push({
                     "__RowIndex": {
                         $row_index: order
                     }
                 });
+                //remove order
                 if (order) {
                     delete obj.$order;
                 }
+                //get sub query
                 var subQuery = self.formatSelect(obj);
+                //add order again
                 if (order) {
                     obj.$order = order;
                 }
-                //delete row index field
+                //remove row index field
                 selectFields.pop();
                 var fields = [];
                 _.forEach(selectFields, function (x) {
@@ -1181,6 +1183,18 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
         key: '$length',
         value: function $length(p0) {
             return util.format('LENGTH(%s)', this.escape(p0));
+        }
+
+        /**
+         * @param {...*} p0
+         * @return {*}
+         */
+
+    }, {
+        key: '$row_index',
+        value: function $row_index(p0) {
+            var args = Array.prototype.slice.call(arguments);
+            return util.format('ROW_NUMBER() OVER(%s)', args && args.length ? this.format(args, '%o') : 'ORDER BY NULL');
         }
     }, {
         key: '$ceiling',

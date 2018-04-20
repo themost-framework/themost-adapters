@@ -14,7 +14,7 @@ import _ from 'lodash';
 import {SqlFormatter} from '@themost/query/formatter';
 import {TraceUtils,LangUtils} from "@themost/common/utils";
 import {SqlUtils} from "@themost/query/utils";
-import {QueryField} from "../../../../themost/modules/@themost/query/query";
+import {QueryField} from "@themost/query/query";
 
 
 /**
