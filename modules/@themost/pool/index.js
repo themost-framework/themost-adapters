@@ -221,8 +221,10 @@ var DataPool = exports.DataPool = function () {
                 throw new TypeError('Child data adapter cannot be found.');
             }
             this.adapter_ = dataConfiguration.getAdapterType(adapter.invariantName);
+            //set child adapter
+            this.options.adapter = adapter;
             //get child adapter
-            return this.adapter_.createInstance(adapter.options);
+            return this.adapter_.createInstance(this.options.adapter.options);
         }
     }, {
         key: 'cleanup',
