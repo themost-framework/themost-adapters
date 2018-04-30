@@ -30,15 +30,12 @@ var _async = require('async');
 
 var async = _interopRequireDefault(_async).default;
 
-var _path = require('path');
-
-var path = _interopRequireDefault(_path).default;
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var HASH_CODE_LENGTH = 6;
+var HASH_CODE_LENGTH = 24;
+var getConfigurationMethod = Symbol('getConfiguration');
 
 var pools = Symbol('pools');
 /**
@@ -189,6 +186,8 @@ var DataPool = exports.DataPool = function () {
     _createClass(DataPool, [{
         key: 'createObject',
         value: function createObject() {
+            var _this = this;
+
             //if local adapter module has been already loaded
             if (typeof this.adapter_ !== 'undefined') {
                 //create adapter instance and return
@@ -196,71 +195,33 @@ var DataPool = exports.DataPool = function () {
             }
 
             this.options = this.options || {};
+            if (typeof this[getConfigurationMethod] !== 'function') {
+                throw new TypeError('Configuration getter must be a function.');
+            }
             /**
-             * @type {{adapters:Array, adapterTypes:Array}|*}
+             * @type {ConfigurationBase}
              */
-            var config = void 0;
-            if (global && global.application) {
-                var app = global.application;
-                config = app.config || { adapters: [], adapterTypes: [] };
-            } else {
-                //try to load config file
-                try {
-                    config = require(path.join(process.cwd(), 'app/config.json'));
-                } catch (e) {
-                    log('Configuration file cannot be loaded due to internal error.');
-                    log(e);
-                    //config cannot be load (do nothing)
-                    config = { adapters: [], adapterTypes: [] };
-                }
+            var configuration = this[getConfigurationMethod]();
+            if (_.isNil(configuration)) {
+                throw new TypeError('Configuration cannot be empty at this context.');
             }
-            var adapter = this.options.adapter,
-                er = void 0;
-            if (typeof this.options.adapter === 'string') {
-                var name = this.options.adapter;
-                //try to load adapter settings from configuration
-                config.adapters = config.adapters || [];
-                var namedAdapter = _.find(config.adapters, function (x) {
-                    return x.name === name;
-                });
-                if (typeof namedAdapter === 'undefined') {
-                    er = new Error('The specified data adapter cannot be found.');
-                    er.code = 'ECONF';
-                    throw er;
-                }
-                this.options.adapter = namedAdapter;
-                adapter = this.options.adapter;
-            }
-            if (typeof adapter === 'undefined' || adapter === null) {
-                er = new Error('The base data adapter cannot be empty at this context.');
-                er.code = 'ECONF';
-                throw er;
-            }
-            //get adapter's invariant name
-            var adapterType = _.find(config.adapterTypes, function (x) {
-                return x.invariantName === adapter.invariantName;
+            var dataConfiguration = configuration.getStrategy(function DataConfigurationStrategy() {
+                //
             });
-            var adapterModule = void 0;
-            if (typeof adapterType === 'undefined') {
-                er = new Error('The base data adapter cannot be found.');
-                er.code = 'ECONF';
-                throw er;
+            if (_.isNil(dataConfiguration)) {
+                throw new TypeError('Data configuration cannot be empty at this context.');
             }
-            try {
-                adapterModule = require(adapterType.type);
-            } catch (e) {
-                log(e);
-                er = new Error('Base data adapter cannot be loaded due to internal error.');
-                er.code = 'ECONF';
-                throw er;
+            if (typeof dataConfiguration.getAdapterType !== 'function') {
+                throw new TypeError('Data configuration adapter getter must be a function.');
             }
-            if (typeof adapterModule.createInstance !== 'function') {
-                er = new Error('Base data adapter module createInstance() method is missing or is not yet implemented.');
-                er.code = 'EMOD';
-                throw er;
+            var adapter = dataConfiguration.adapters.find(function (x) {
+                return x.name === _this.options.adapter;
+            });
+            if (_.isNil(adapter)) {
+                throw new TypeError('Child data adapter cannot be found.');
             }
-            //hold adapter module
-            this.adapter_ = adapterModule;
+            this.adapter_ = dataConfiguration.getAdapterType(adapter.invariantName);
+            //get child adapter
             return this.adapter_.createInstance(adapter.options);
         }
     }, {
@@ -577,12 +538,22 @@ var PoolAdapter = exports.PoolAdapter = function () {
     }
 
     /**
-     * @private
-     * @param callback
+     * @param {Function} getConfigurationFunc
      */
 
 
     _createClass(PoolAdapter, [{
+        key: 'hasConfiguration',
+        value: function hasConfiguration(getConfigurationFunc) {
+            this.pool[getConfigurationMethod] = getConfigurationFunc;
+        }
+
+        /**
+         * @private
+         * @param callback
+         */
+
+    }, {
         key: 'open',
         value: function open(callback) {
             var self = this;
