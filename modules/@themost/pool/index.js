@@ -567,10 +567,21 @@ var PoolAdapter = exports.PoolAdapter = function () {
                         return callback(err);
                     }
                     self.base = result;
-                    if (typeof self.base.lastIdentity === 'function') {
-                        self.lastIdentity = function (callback) {
-                            return this.base.lastIdentity(callback);
-                        };
+                    //add lastIdentity()
+                    if (self.base && typeof self.base.lastIdentity === 'function') {
+                        Object.assign(self, {
+                            lastIdentity: function lastIdentity(callback) {
+                                return this.base.lastIdentity(callback);
+                            }
+                        });
+                    }
+                    //add nextIdentity()
+                    if (self.base && typeof self.base.nextIdentity === 'function') {
+                        Object.assign(self, {
+                            nextIdentity: function nextIdentity(entity, attribute, callback) {
+                                return this.base.nextIdentity(entity, attribute, callback);
+                            }
+                        });
                     }
                     self.base.open(callback);
                 });
@@ -589,8 +600,11 @@ var PoolAdapter = exports.PoolAdapter = function () {
             var self = this;
             if (self.base) {
                 self.pool.releaseObject(self.base, callback);
-                if (typeof self.base.lastIdentity === 'function') {
+                if (typeof self.lastIdentity === 'function') {
                     delete self.lastIdentity;
+                }
+                if (typeof self.nextIdentity === 'function') {
+                    delete self.nextIdentity;
                 }
                 delete self.base;
             } else {
