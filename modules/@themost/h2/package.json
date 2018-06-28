@@ -1,6 +1,6 @@
 {
   "name": "@themost/h2",
-  "version": "2.0.5",
+  "version": "2.1.1",
   "description": "MOST Web Framework H2 Data Adapter",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,8 @@
   },
   "homepage": "https://github.com/themost-framework/themost-adapters",
   "dependencies": {
+    "@themost/query": "^2.1.1",
+    "@themost/common": "^2.1.1",
     "async": "^1.4.2",
     "jdbc": "^0.4.0",
     "lodash": "^4.17.4"
