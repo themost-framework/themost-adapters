@@ -121,8 +121,10 @@ export class SqliteAdapter {
                 s = size>0 ?  util.format('TEXT(%s,0)', size) : 'TEXT';
                 break;
             case 'Long':
+                s = 'NUMERIC';
+                break;
             case 'Duration':
-                s = size>0 ?  util.format('TEXT(%s,0)', size) : 'TEXT';
+                s = size>0 ?  util.format('TEXT(%s,0)', size) : 'TEXT(48,0)';
                 break;
             case 'Integer':
                 s = 'INTEGER' + (field.size ? '(' + field.size + ',0)':'' );
@@ -638,7 +640,7 @@ export class SqliteAdapter {
                 callback = callback || function() {};
                 self.open(function(err) {
                    if (err) { callback(err); return; }
-                    const sql = util.format("DROP VIEW IF EXISTS %s",name);
+                    const sql = util.format("DROP VIEW IF EXISTS `%s`",name);
                     self.execute(sql, undefined, function(err) {
                         if (err) { callback(err); return; }
                         callback();
@@ -655,7 +657,7 @@ export class SqliteAdapter {
                     thisArg.drop(function(err) {
                         if (err) { tr(err); return; }
                         try {
-                            let sql = util.format("CREATE VIEW %s AS ",name);
+                            let sql = util.format("CREATE VIEW `%s` AS ",name);
                             const formatter = new SqliteFormatter();
                             sql += formatter.format(q);
                             self.execute(sql, undefined, tr);

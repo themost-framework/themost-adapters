@@ -663,7 +663,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         if (err) {
                             callback(err);return;
                         }
-                        var sql = util.format("DROP VIEW IF EXISTS %s", name);
+                        var sql = util.format("DROP VIEW IF EXISTS `%s`", name);
                         self.execute(sql, undefined, function (err) {
                             if (err) {
                                 callback(err);return;
@@ -684,7 +684,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                                 tr(err);return;
                             }
                             try {
-                                var sql = util.format("CREATE VIEW %s AS ", name);
+                                var sql = util.format("CREATE VIEW `%s` AS ", name);
                                 var formatter = new SqliteFormatter();
                                 sql += formatter.format(q);
                                 self.execute(sql, undefined, tr);
@@ -958,8 +958,10 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                     s = size > 0 ? util.format('TEXT(%s,0)', size) : 'TEXT';
                     break;
                 case 'Long':
+                    s = 'NUMERIC';
+                    break;
                 case 'Duration':
-                    s = size > 0 ? util.format('TEXT(%s,0)', size) : 'TEXT';
+                    s = size > 0 ? util.format('TEXT(%s,0)', size) : 'TEXT(48,0)';
                     break;
                 case 'Integer':
                     s = 'INTEGER' + (field.size ? '(' + field.size + ',0)' : '');

@@ -836,7 +836,7 @@ var MSSqlAdapter = function () {
                     break;
                 case 'Integer':
                 case 'Duration':
-                    s = 'int';
+                    s = size > 0 ? util.format('varchar(%s)', size) : 'varchar(48)';
                     break;
                 case 'URL':
                     if (size > 0) s = util.format('varchar(%s)', size);else s = 'varchar(512)';

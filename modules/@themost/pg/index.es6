@@ -397,7 +397,7 @@ export class PGSqlAdapter {
                 s = 'int';
                 break;
             case 'Duration':
-                s = 'integer';
+                s = size>0 ? util.format('varchar(%s)', size): 'varchar(48)';
                 break;
             case 'URL':
                 if (size>0)

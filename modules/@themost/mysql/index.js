@@ -937,8 +937,10 @@ var MySqlAdapter = function () {
                     s = 'timestamp';
                     break;
                 case 'Integer':
-                case 'Duration':
                     s = 'int(11)';
+                    break;
+                case 'Duration':
+                    s = size > 0 ? util.format('varchar(%s,0)', size) : 'varchar(36)';
                     break;
                 case 'URL':
                 case 'Text':

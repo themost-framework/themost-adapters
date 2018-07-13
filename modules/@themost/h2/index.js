@@ -1125,7 +1125,7 @@ var H2Adapter = function () {
                     s = 'INTEGER';
                     break;
                 case 'Duration':
-                    s = size > 0 ? util.format('VARCHAR(%s)', size) : 'VARCHAR(36)';
+                    s = size > 0 ? util.format('VARCHAR(%s)', size) : 'VARCHAR(48)';
                     break;
                 case 'BigInteger':
                     s = 'BIGINT';

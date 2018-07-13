@@ -903,8 +903,10 @@ var OracleAdapter = exports.OracleAdapter = function () {
                     s = 'NUMBER(19,4)';
                     break;
                 case 'Long':
-                case 'Duration':
                     s = 'NUMBER(19,0)';
+                    break;
+                case 'Duration':
+                    s = field.size ? util.format('NVARCHAR2(%s)', field.size) : 'NVARCHAR2(48)';
                     break;
                 case 'Integer':
                     s = 'NUMBER' + (field.size ? '(' + field.size + ',0)' : '(19,0)');
@@ -1050,15 +1052,15 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
                 return self.format(x, '%f');
             }).join(', ') + ' FROM DUAL';
         }
-    }, {
-        key: 'formatLimitSelect',
-
 
         /**
          *
          * @param {QueryExpression} obj
          * @returns {string}
          */
+
+    }, {
+        key: 'formatLimitSelect',
         value: function formatLimitSelect(obj) {
 
             var sql = void 0;

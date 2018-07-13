@@ -159,8 +159,10 @@ export class OracleAdapter {
                 s = 'NUMBER(19,4)';
                 break;
             case 'Long':
-            case 'Duration':
                 s = 'NUMBER(19,0)';
+                break;
+            case 'Duration':
+                s =field.size ? util.format('NVARCHAR2(%s)', field.size) : 'NVARCHAR2(48)';
                 break;
             case 'Integer':
                 s = 'NUMBER' + (field.size ? '(' + field.size + ',0)':'(19,0)' );
@@ -368,7 +370,7 @@ export class OracleAdapter {
                             if (err) { return cb(err); }
                             for (let i = 0; i < migration.add.length; i++) {
                                 const x = migration.add[i];
-                                column = _.find(columns, function(y) {
+                                column = _.find(columns, (y)=> {
                                     return y.name === x.name;
                                 });
                                 if (column) {
@@ -598,7 +600,7 @@ export class OracleAdapter {
                 'AND cons.constraint_name = cols.constraint_name AND cons.owner = cols.owner) t0 ON c0.TABLE_NAME=t0.TABLE_NAME ' +
                 'AND c0.OWNER=t0.OWNER AND c0.COLUMN_NAME=t0.COLUMN_NAME WHERE c0.TABLE_NAME = ?';
                 if (owner) { 
-                    sql += ' AND REGEXP_LIKE(c0.OWNER,?,\'i\')'
+                    sql += ' AND REGEXP_LIKE(c0.OWNER,?,\'i\')';
                 }
                 self.execute(sql, [name, '^' + owner + '$'], function(err, result) {
                         if (err) { callback(err); return; }
@@ -942,10 +944,10 @@ export class OracleFormatter extends SqlFormatter {
      * @returns {string}
      */
     formatFixedSelect(obj) {
-        var self = this;
-        var fields = obj.fields();
+        let self = this;
+        let fields = obj.fields();
         return 'SELECT ' + _.map(fields, function(x) { return self.format(x,'%f'); }).join(', ') + ' FROM DUAL';
-    };
+    }
 
     /**
      *
