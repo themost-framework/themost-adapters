@@ -102,7 +102,7 @@ var H2Adapter = function () {
             //build URL
             if (typeof options.path === 'string') {
                 result = {
-                    url: util.format("jdbc:h2:%s;AUTO_SERVER=true;AUTO_RECONNECT=true", options.path),
+                    url: util.format("jdbc:h2:%s;AUTO_SERVER=true;AUTO_RECONNECT=true", path.resolve(process.cwd(), options.path)),
                     minpoolsize: 1,
                     maxpoolsize: typeof options.pool === 'number' ? options.pool : 25,
                     properties: {
@@ -510,7 +510,7 @@ var H2Adapter = function () {
                             if (err) {
                                 return cb(err);
                             }
-                            cb(null, result[0].count);
+                            cb(null, parseInt(result[0].count));
                         });
                     },
                     //4a. Check table existence
@@ -698,7 +698,7 @@ var H2Adapter = function () {
                         if (err) {
                             return callback(err);
                         }
-                        callback(null, result[0].count);
+                        callback(null, parseInt(result[0].count));
                     });
                 },
                 /**
@@ -1278,14 +1278,14 @@ var H2Formatter = exports.H2Formatter = function (_SqlFormatter) {
         key: '$mod',
         value: function $mod(p0, p1) {
             //validate params
-            if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1)) return '0';
+            if (_.isNil(p0) || _.isNil(p1)) return '0';
             return util.format('MOD(%s,%s)', this.escape(p0), this.escape(p1));
         }
     }, {
         key: '$bit',
         value: function $bit(p0, p1) {
             //validate params
-            if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1)) return '0';
+            if (_.isNil(p0) || _.isNil(p1)) return '0';
             return util.format('BITAND(%s,%s)', this.escape(p0), this.escape(p1));
         }
     }]);

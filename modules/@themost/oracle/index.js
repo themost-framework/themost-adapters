@@ -700,22 +700,37 @@ var OracleAdapter = exports.OracleAdapter = function () {
                         //do nothing
                         return callback();
                     }
-                    var strFields = fields.map(function (x) {
-                        return format('"%f" %t', x);
-                    }).join(', ');
 
-                    //get table qualified name
-                    var strTable = '';
+                    //get columns
+                    return this.columns(function (err, columns) {
+                        if (err) {
+                            return callback(err);
+                        }
 
-                    var formatter = new OracleFormatter();
-                    if (typeof owner !== 'undefined') {
-                        strTable = formatter.escapeName(owner) + ".";
-                    }
-                    strTable += formatter.escapeName(table);
-                    //generate SQL statement
-                    var sql = util.format('ALTER TABLE %s MODIFY (%s)', strTable, strFields);
-                    self.execute(sql, [], function (err) {
-                        callback(err);
+                        var strFields = fields.map(function (x) {
+                            var column = columns.find(function (y) {
+                                return y.name === x.name;
+                            });
+                            var res = format('"%f" %t', x);
+                            if (column && LangUtils.parseBoolean(typeof x.nullable === 'undefined' ? true : x.nullable) === LangUtils.parseBoolean(column.nullable)) {
+                                res = res.replace(/\sNOT\sNULL$/, '').replace(/\sNULL$/, '');
+                            }
+                            return res;
+                        }).join(', ');
+
+                        //get table qualified name
+                        var strTable = '';
+
+                        var formatter = new OracleFormatter();
+                        if (typeof owner !== 'undefined') {
+                            strTable = formatter.escapeName(owner) + ".";
+                        }
+                        strTable += formatter.escapeName(table);
+                        //generate SQL statement
+                        var sql = util.format('ALTER TABLE %s MODIFY (%s)', strTable, strFields);
+                        self.execute(sql, [], function (err) {
+                            callback(err);
+                        });
                     });
                 }
             };

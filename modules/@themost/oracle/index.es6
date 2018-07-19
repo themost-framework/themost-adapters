@@ -696,21 +696,39 @@ export class OracleAdapter {
                     //do nothing
                     return callback();
                 }
-                const strFields = fields.map(function(x) {
-                    return format('"%f" %t', x);
-                }).join(', ');
 
-                //get table qualified name
-                let strTable = '';
+                //get columns
+                return this.columns((err, columns)=> {
+                    if (err) {
+                        return callback(err);
+                    }
 
-                const formatter = new OracleFormatter();
-                if (typeof owner !== 'undefined') { strTable = formatter.escapeName(owner) + "."; }
-                strTable += formatter.escapeName(table);
-                //generate SQL statement
-                const sql = util.format('ALTER TABLE %s MODIFY (%s)', strTable, strFields);
-                self.execute(sql, [], function(err) {
-                    callback(err);
+                    const strFields = fields.map(function(x) {
+                        let column = columns.find((y)=> {
+                            return y.name === x.name;
+                        });
+                        let res = format('"%f" %t', x);
+                        if (column && (LangUtils.parseBoolean((typeof x.nullable === 'undefined') ? true : x.nullable) === LangUtils.parseBoolean(column.nullable))) {
+                            res = res.replace(/\sNOT\sNULL$/,'').replace(/\sNULL$/,'');
+                        }
+                        return res;
+                    }).join(', ');
+
+                    //get table qualified name
+                    let strTable = '';
+
+                    const formatter = new OracleFormatter();
+                    if (typeof owner !== 'undefined') { strTable = formatter.escapeName(owner) + "."; }
+                    strTable += formatter.escapeName(table);
+                    //generate SQL statement
+                    const sql = util.format('ALTER TABLE %s MODIFY (%s)', strTable, strFields);
+                    self.execute(sql, [], function(err) {
+                        callback(err);
+                    });
+
                 });
+
+
             }
         };
     }

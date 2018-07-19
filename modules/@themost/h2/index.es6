@@ -50,7 +50,7 @@ export class H2Adapter {
             //build URL
             if (typeof options.path === 'string') {
                 result = {
-                    url : util.format("jdbc:h2:%s;AUTO_SERVER=true;AUTO_RECONNECT=true", options.path),
+                    url : util.format("jdbc:h2:%s;AUTO_SERVER=true;AUTO_RECONNECT=true", path.resolve(process.cwd(), options.path)),
                     minpoolsize:1,
                     maxpoolsize: typeof options.pool === 'number' ? options.pool : 25,
                     properties : {
@@ -515,7 +515,7 @@ export class H2Adapter {
                         self.execute('SELECT COUNT(*) AS "count" FROM "migrations" WHERE "appliesTo"=? and "version"=?',
                             [migration.appliesTo, migration.version], function(err, result) {
                                 if (err) { return cb(err); }
-                                cb(null, result[0].count);
+                                cb(null, parseInt(result[0].count));
                             });
                     },
                     //4a. Check table existence
@@ -684,7 +684,7 @@ export class H2Adapter {
                 self.execute('SELECT COUNT(*) AS "count" FROM information_schema.TABLES WHERE TABLE_NAME=? AND TABLE_SCHEMA=?',
                     [ name, 'PUBLIC' ], function(err, result) {
                         if (err) { return callback(err); }
-                        callback(null, result[0].count);
+                        callback(null, parseInt(result[0].count));
                     });
             },
             /**
@@ -1166,14 +1166,14 @@ export class H2Formatter extends SqlFormatter {
 
     $mod(p0, p1) {
         //validate params
-        if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+        if (_.isNil(p0) || _.isNil(p1))
             return '0';
         return util.format('MOD(%s,%s)', this.escape(p0), this.escape(p1));
     }
 
     $bit(p0, p1) {
         //validate params
-        if (Object.isNullOrUndefined(p0) || Object.isNullOrUndefined(p1))
+        if (_.isNil(p0) || _.isNil(p1))
             return '0';
         return util.format('BITAND(%s,%s)', this.escape(p0), this.escape(p1));
     }
