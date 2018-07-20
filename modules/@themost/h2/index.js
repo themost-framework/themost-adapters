@@ -428,6 +428,9 @@ var H2Adapter = function () {
                                 if (err) {
                                     return callback(err);
                                 }
+                                if (result._types) {
+                                    result._types[jinst.getInstance().getStaticFieldValue("java.sql.Types", "BIGINT")] = "Int";
+                                }
                                 if (typeof result.toObjArray === 'function') {
                                     result.toObjArray(function (err, results) {
                                         return callback(null, results);
