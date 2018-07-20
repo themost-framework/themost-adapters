@@ -71,7 +71,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 if (!jinst.isJvmCreated()) {
     jinst.addOption("-Xrs");
-    jinst.setupClasspath([path.resolve(__dirname, './drivers/hsqldb.jar')]);
+    jinst.setupClasspath([path.resolve(__dirname, './drivers/hsqldb.jar'), path.resolve(__dirname, './drivers/h2-1.4.197.jar')]);
 }
 
 /**
@@ -102,7 +102,7 @@ var H2Adapter = function () {
             //build URL
             if (typeof options.path === 'string') {
                 result = {
-                    url: util.format("jdbc:hsqldb:file:%s;AUTO_SERVER=true;AUTO_RECONNECT=true", path.resolve(process.cwd(), options.path)),
+                    url: util.format("jdbc:h2:%s;AUTO_SERVER=true;AUTO_RECONNECT=true", path.resolve(process.cwd(), options.path)),
                     minpoolsize: 1,
                     maxpoolsize: typeof options.pool === 'number' ? options.pool : 25,
                     properties: {
@@ -114,7 +114,7 @@ var H2Adapter = function () {
             } else if (typeof options.host === 'string') {
                 var host_ = options.port ? options.host + ":" + options.port : options.host;
                 result = {
-                    url: util.format("jdbc:hsqldb:hsql://%s/%s;AUTO_RECONNECT=true", host_, options.database),
+                    url: util.format("jdbc:h2:tcp://%s/%s;AUTO_RECONNECT=true", host_, options.database),
                     minpoolsize: 1,
                     maxpoolsize: typeof options.pool === 'number' ? options.pool : 25,
                     properties: {
