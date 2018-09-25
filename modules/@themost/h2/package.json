@@ -1,6 +1,6 @@
 {
   "name": "@themost/h2",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "MOST Web Framework H2 Data Adapter",
   "main": "index.js",
   "scripts": {

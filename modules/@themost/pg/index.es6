@@ -315,7 +315,7 @@ export class PGSqlAdapter {
                 if (err) { callback.call(self,err); return; }
                 if (result.length===0) {
                     //get max value by querying the given entity
-                    const q = QueryExpression.create(entity).select(QueryField.create().max(attribute));
+                    const q = new QueryExpression().from(entity).select([new QueryField().max(attribute)]);
                     self.execute(q,null, function(err, result) {
                         if (err) { return callback.call(self, err); }
                         let value = 1;

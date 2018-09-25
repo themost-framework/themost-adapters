@@ -220,7 +220,7 @@ export class MySqlAdapter {
                 if (err) { callback.bind(self)(err); return; }
                 if (result.length===0) {
                     //get max value by querying the given entity
-                    const q = QueryExpression.create(entity).select(QueryField.create().max(attribute));
+                    const q = new QueryExpression().from(entity).select([new QueryField().max(attribute)]);
                     self.execute(q,null, function(err, result) {
                         if (err) { callback.bind(self)(err); return; }
                         let value = 1;

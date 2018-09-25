@@ -518,7 +518,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                     }
                     if (result.length === 0) {
                         //get max value by querying the given entity
-                        var q = QueryExpression.create(entity).select(QueryField.create().max(attribute));
+                        var q = new QueryExpression().from(entity).select([new QueryField().max(attribute)]);
                         self.execute(q, null, function (err, result) {
                             if (err) {
                                 callback.call(self, err);return;
