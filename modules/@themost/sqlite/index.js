@@ -22,8 +22,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 exports.createInstance = createInstance;
 
-require('source-map-support/register');
-
 var _async = require('async');
 
 var async = _interopRequireDefault(_async).default;

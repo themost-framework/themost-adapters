@@ -7,7 +7,6 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import 'source-map-support/register';
 import async from 'async';
 import _ from 'lodash';
 import util from 'util';
@@ -335,7 +334,9 @@ export class SqliteAdapter {
                         if (migration.remove>0) {
                             for (let i = 0; i < migration.remove.length; i++) {
                                 let x = migration.remove[i];
-                                const colIndex = _.findIndex(columns, (y) => { return y.name === x.name; });
+                                let colIndex = _.findIndex(columns, function(y) {
+                                    return y.name === x.name;
+                                });
                                 if (colIndex>=0) {
                                     if (!columns[colIndex].primary) {
                                         forceAlter = true;
@@ -358,7 +359,9 @@ export class SqliteAdapter {
 
                             for (let i = 0; i < migration.change.length; i++) {
                                 let x = migration.change[i];
-                                column = _.find(columns, function(y) { return y.name === x.name; });
+                                column = _.find(columns, function(y) {
+                                    return y.name === x.name;
+                                });
                                 if (column) {
                                     if (!column.primary) {
                                         //validate new column type (e.g. TEXT(120,0) NOT NULL)
@@ -390,7 +393,9 @@ export class SqliteAdapter {
 
                         for (let i = 0; i < migration.add.length; i++) {
                             let x = migration.add[i];
-                            column = _.find(columns, function(y) { return (y.name === x.name); });
+                            column = _.find(columns, function(y) {
+                                return (y.name === x.name);
+                            });
                             if (column) {
                                 if (column.primary) {
                                     migration.add.splice(i, 1);
@@ -833,7 +838,7 @@ export class SqliteAdapter {
             create: function(name, columns, callback) {
                 const cols = [];
                 if (typeof columns === 'string') {
-                    cols.push(columns)
+                    cols.push(columns);
                 }
                 else if (util.isArray(columns)) {
                     cols.push.apply(cols, columns);
@@ -851,7 +856,7 @@ export class SqliteAdapter {
                         formatter.escapeName(name),
                         formatter.escapeName(table),
                         cols.map(function(x) {
-                            return formatter.escapeName(x)
+                            return formatter.escapeName(x);
                         }).join(","));
                     if (typeof ix === 'undefined' || ix === null) {
                         self.execute(sqlCreateIndex, [], callback);
@@ -895,7 +900,7 @@ export class SqliteAdapter {
                     self.execute(util.format("DROP INDEX %s", self.escapeName(name)), [], callback);
                 });
             }
-        }
+        };
     }
 }
 
