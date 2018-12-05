@@ -132,7 +132,7 @@ export class OracleAdapter {
                 s = 'NUMBER(3,0)';
                 break;
             case 'Number':
-                s = 'NUMBER(38)';
+                s = 'NUMBER(38,0)';
                 break;
             case 'Float':
                 s = 'NUMBER(19,4)';
@@ -593,16 +593,29 @@ export class OracleAdapter {
                  AND c0.OWNER=t0.OWNER AND c0.COLUMN_NAME=t0.COLUMN_NAME WHERE c0.TABLE_NAME = ?
                 */
 
-                let sql = 'SELECT c0.COLUMN_NAME AS "name", c0.DATA_TYPE AS "type", ROWNUM AS "ordinal", CASE WHEN c0."CHAR_LENGTH">0 THEN c0."CHAR_LENGTH" ELSE c0.DATA_LENGTH END as "size", ' +
+                let sql =
+                    `SELECT c0.COLUMN_NAME AS "name", c0.DATA_TYPE AS "type", ROWNUM AS "ordinal", CASE WHEN c0."CHAR_LENGTH">0 THEN c0."CHAR_LENGTH" ELSE c0.DATA_LENGTH END as "size",
+                    c0.DATA_SCALE AS "scale", c0.DATA_PRECISION AS "precision", CASE WHEN c0.NULLABLE='Y' THEN 1 ELSE 0 END AS "nullable", CASE WHEN t0.CONSTRAINT_TYPE='P' THEN 1 ELSE 0 END AS "primary"
+                    FROM ALL_TAB_COLUMNS c0  LEFT JOIN   (
+                    SELECT cols.table_name, cols.column_name, cols.owner, cons.constraint_type FROM all_constraints cons INNER JOIN all_cons_columns cols
+                    ON cons.constraint_type = 'P' AND cons.constraint_name = cols.constraint_name AND cons.owner = cols.owner 
+                    WHERE cols.table_name=? ) t0 ON c0.COLUMN_NAME=t0.COLUMN_NAME
+                    WHERE c0.TABLE_NAME = ?`;
+
+
+                   /* 'SELECT c0.COLUMN_NAME AS "name", c0.DATA_TYPE AS "type", ROWNUM AS "ordinal", CASE WHEN c0."CHAR_LENGTH">0 THEN c0."CHAR_LENGTH" ELSE c0.DATA_LENGTH END as "size", ' +
                     'c0.DATA_SCALE AS "scale", c0.DATA_PRECISION AS "precision", CASE WHEN c0.NULLABLE=\'Y\' THEN 1 ELSE 0 END AS "nullable", CASE WHEN t0.CONSTRAINT_TYPE=\'P\' ' +
                 'THEN 1 ELSE 0 END AS "primary" FROM ALL_TAB_COLUMNS c0 LEFT JOIN (SELECT cols.table_name, cols.column_name, cols.owner, ' +
                 'cons.constraint_type FROM all_constraints cons, all_cons_columns cols WHERE cons.constraint_type = \'P\' ' +
                 'AND cons.constraint_name = cols.constraint_name AND cons.owner = cols.owner) t0 ON c0.TABLE_NAME=t0.TABLE_NAME ' +
-                'AND c0.OWNER=t0.OWNER AND c0.COLUMN_NAME=t0.COLUMN_NAME WHERE c0.TABLE_NAME = ?';
+                'AND c0.OWNER=t0.OWNER AND c0.COLUMN_NAME=t0.COLUMN_NAME WHERE c0.TABLE_NAME = ?';*/
+
+
+
                 if (owner) { 
                     sql += ' AND REGEXP_LIKE(c0.OWNER,?,\'i\')';
                 }
-                self.execute(sql, [name, '^' + owner + '$'], function(err, result) {
+                self.execute(sql, [name,name, '^' + owner + '$'], function(err, result) {
                         if (err) { callback(err); return; }
                         callback(null, result);
                     });
