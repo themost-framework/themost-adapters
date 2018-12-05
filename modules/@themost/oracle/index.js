@@ -1231,21 +1231,22 @@ var OracleFormatter = exports.OracleFormatter = function (_SqlFormatter) {
         value: function $startswith(p0, p1) {
             //validate params
             if (_.isNil(p0) || _.isNil(p1)) return '';
-            return 'REGEXP_LIKE(' + this.escape(p0) + ',\'^' + this.escape(p1, true) + '\')';
+            return 'REGEXP_COUNT(' + this.escape(p0) + ',\'^' + this.escape(p1, true) + '\', 1, \'i\')';
         }
     }, {
         key: '$contains',
         value: function $contains(p0, p1) {
             //validate params
             if (_.isNil(p0) || _.isNil(p1)) return '';
-            return 'REGEXP_LIKE(' + this.escape(p0) + ',\'' + this.escape(p1, true) + '\')';
+            //(CASE WHEN REGEXP_COUNT(x, 'text', 1, 'i') > 0 THEN 1 ELSE 0 END)
+            return '(CASE WHEN REGEXP_COUNT(' + this.escape(p0) + ',\'' + this.escape(p1, true) + '\', 1, \'i\') > 0 THEN 1 ELSE 0 END)';
         }
     }, {
         key: '$endswith',
         value: function $endswith(p0, p1) {
             //validate params
             if (_.isNil(p0) || _.isNil(p1)) return '';
-            return 'REGEXP_LIKE(' + this.escape(p0) + ',\'' + this.escape(p1, true) + '$\')';
+            return 'REGEXP_COUNT(' + this.escape(p0) + ',\'' + this.escape(p1, true) + '$\', 1, \'i\')';
         }
     }, {
         key: '$day',
