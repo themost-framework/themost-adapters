@@ -881,7 +881,7 @@ export class MSSqlFormatter extends SqlFormatter {
      */
     $indexof(p0, p1) {
         p1='%'+ p1+ '%';
-        return 'PATINDEX('.concat( this.escape(p1),',',this.escape(p0),')');
+        return '(PATINDEX('.concat( this.escape(p1),',',this.escape(p0),')-1)');
     }
 
     /**
@@ -905,7 +905,7 @@ export class MSSqlFormatter extends SqlFormatter {
         else {
             s1 = s1 + '%';
         }
-        //use patindex for text searching
+        //use PATINDEX for text searching
         return util.format('PATINDEX(%s,%s) >= 1',this.escape(s1), this.escape(p0));
     }
 
@@ -984,7 +984,7 @@ export class MSSqlFormatter extends SqlFormatter {
      * @param p1 {*}
      */
     $text(p0, p1) {
-        return util.format('PATINDEX (%s,%s)', this.escape('%' + p1 + '%'), this.escape(p0));
+        return util.format('(PATINDEX (%s,%s) - 1)', this.escape('%' + p1 + '%'), this.escape(p0));
     }
 
     /**

@@ -952,7 +952,7 @@ var MSSqlFormatter = exports.MSSqlFormatter = function (_SqlFormatter) {
         key: '$indexof',
         value: function $indexof(p0, p1) {
             p1 = '%' + p1 + '%';
-            return 'PATINDEX('.concat(this.escape(p1), ',', this.escape(p0), ')');
+            return '(PATINDEX('.concat(this.escape(p1), ',', this.escape(p0), ')-1)');
         }
 
         /**
@@ -977,7 +977,7 @@ var MSSqlFormatter = exports.MSSqlFormatter = function (_SqlFormatter) {
             } else {
                 s1 = s1 + '%';
             }
-            //use patindex for text searching
+            //use PATINDEX for text searching
             return util.format('PATINDEX(%s,%s) >= 1', this.escape(s1), this.escape(p0));
         }
     }, {
@@ -1062,7 +1062,7 @@ var MSSqlFormatter = exports.MSSqlFormatter = function (_SqlFormatter) {
     }, {
         key: '$text',
         value: function $text(p0, p1) {
-            return util.format('PATINDEX (%s,%s)', this.escape('%' + p1 + '%'), this.escape(p0));
+            return util.format('(PATINDEX (%s,%s) - 1)', this.escape('%' + p1 + '%'), this.escape(p0));
         }
 
         /**
