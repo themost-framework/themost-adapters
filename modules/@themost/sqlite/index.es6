@@ -330,11 +330,11 @@ export class SqliteAdapter {
                     //validate operations
 
                     //1. columns to be removed
-                    if (util.isArray(migration.remove)) {
+                    if (Array.isArray(migration.remove)) {
                         if (migration.remove>0) {
                             for (let i = 0; i < migration.remove.length; i++) {
                                 let x = migration.remove[i];
-                                let colIndex = _.findIndex(columns, function(y) {
+                                let colIndex = _.findIndex(columns, (y) => {
                                     return y.name === x.name;
                                 });
                                 if (colIndex>=0) {
@@ -354,12 +354,12 @@ export class SqliteAdapter {
                         }
                     }
                     //1. columns to be changed
-                    if (util.isArray(migration.change)) {
+                    if (Array.isArray(migration.change)) {
                         if (migration.change>0) {
 
                             for (let i = 0; i < migration.change.length; i++) {
                                 let x = migration.change[i];
-                                column = _.find(columns, function(y) {
+                                column = _.find(columns, (y) => {
                                     return y.name === x.name;
                                 });
                                 if (column) {
@@ -389,11 +389,11 @@ export class SqliteAdapter {
 
                         }
                     }
-                    if (util.isArray(migration.add)) {
+                    if (Array.isArray(migration.add)) {
 
                         for (let i = 0; i < migration.add.length; i++) {
                             let x = migration.add[i];
-                            column = _.find(columns, function(y) {
+                            column = _.find(columns, (y) => {
                                 return (y.name === x.name);
                             });
                             if (column) {
@@ -738,7 +738,7 @@ export class SqliteAdapter {
                             if (result) {
                                 if (typeof result === 'object') {
                                     let keys;
-                                    if (util.isArray(result)) {
+                                    if (Array.isArray(result)) {
                                         if (result.length>0) {
                                             keys = Object.keys(result[0]);
                                             result.forEach(function(x) {
@@ -840,7 +840,7 @@ export class SqliteAdapter {
                 if (typeof columns === 'string') {
                     cols.push(columns);
                 }
-                else if (util.isArray(columns)) {
+                else if (Array.isArray(columns)) {
                     cols.push.apply(cols, columns);
                 }
                 else {

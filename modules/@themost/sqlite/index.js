@@ -326,7 +326,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                     //validate operations
 
                     //1. columns to be removed
-                    if (util.isArray(migration.remove)) {
+                    if (Array.isArray(migration.remove)) {
                         if (migration.remove > 0) {
                             var _loop = function _loop(_i) {
                                 var x = migration.remove[_i];
@@ -353,7 +353,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         }
                     }
                     //1. columns to be changed
-                    if (util.isArray(migration.change)) {
+                    if (Array.isArray(migration.change)) {
                         if (migration.change > 0) {
                             var _loop2 = function _loop2(_i3) {
                                 var x = migration.change[_i3];
@@ -389,7 +389,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                             }
                         }
                     }
-                    if (util.isArray(migration.add)) {
+                    if (Array.isArray(migration.add)) {
                         var _loop3 = function _loop3(_i5) {
                             var x = migration.add[_i5];
                             column = _.find(columns, function (y) {
@@ -754,7 +754,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                                 if (result) {
                                     if ((typeof result === 'undefined' ? 'undefined' : _typeof(result)) === 'object') {
                                         var keys = void 0;
-                                        if (util.isArray(result)) {
+                                        if (Array.isArray(result)) {
                                             if (result.length > 0) {
                                                 keys = Object.keys(result[0]);
                                                 result.forEach(function (x) {
@@ -857,7 +857,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                     var cols = [];
                     if (typeof columns === 'string') {
                         cols.push(columns);
-                    } else if (util.isArray(columns)) {
+                    } else if (Array.isArray(columns)) {
                         cols.push.apply(cols, columns);
                     } else {
                         return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
