@@ -1,6 +1,6 @@
 {
   "name": "@themost/h2",
-  "version": "2.1.5",
+  "version": "2.2.1",
   "description": "MOST Web Framework H2 Data Adapter",
   "main": "index.js",
   "scripts": {
@@ -25,8 +25,6 @@
   },
   "homepage": "https://github.com/themost-framework/themost-adapters",
   "dependencies": {
-    "@themost/common": "^2.1.1",
-    "@themost/query": "^2.1.1",
     "async": "^1.4.2",
     "jdbc": "^0.6.3",
     "lodash": "^4.17.4"
@@ -36,5 +34,9 @@
     "@types/mocha": "^5.2.5",
     "chai": "^4.1.2",
     "mocha": "^5.2.0"
+  },
+  "peerDependencies": {
+    "@themost/common": "^2.1.6",
+    "@themost/query": "^2.1.3"
   }
 }
