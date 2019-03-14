@@ -463,8 +463,16 @@ export class OracleAdapter {
         {
             name=entity.substring(0,26) + "_seq";
         }
+        let owner;
+        if (self.options && self.options.schema) {
+            owner = self.options.schema;
+        }
+        let sql ='SELECT SEQUENCE_OWNER,SEQUENCE_NAME FROM ALL_SEQUENCES WHERE "SEQUENCE_NAME" = ?';
+        if (owner) {
+            sql += ' AND REGEXP_LIKE(SEQUENCE_OWNER,?,\'i\')';
+        }
         //search for sequence
-        self.execute('SELECT SEQUENCE_OWNER,SEQUENCE_NAME FROM ALL_SEQUENCES WHERE "SEQUENCE_NAME" = ?', [name], function(err, result) {
+        self.execute(sql, [ name, owner ? '^' + owner + '$' : null ], function(err, result) {
             if (err) { return callback(err); }
             if (result.length===0) {
                 self.execute(util.format('CREATE SEQUENCE "%s" START WITH 1 INCREMENT BY 1', name), [], function(err) {
@@ -571,8 +579,15 @@ export class OracleAdapter {
              */
             hasSequence:function(callback) {
                 callback = callback || function() {};
-                self.execute('SELECT COUNT(*) AS "count" FROM ALL_SEQUENCES WHERE SEQUENCE_NAME=?',
-                    [ table + '_seq' ], function(err, result) {
+                let sql;
+                if (owner != null) {
+                    sql = 'SELECT COUNT(*) AS "count" FROM ALL_SEQUENCES WHERE SEQUENCE_NAME=?  AND REGEXP_LIKE(owner,?,\'i\')';
+                }
+                else {
+                    sql = 'SELECT COUNT(*) AS "count" FROM ALL_SEQUENCES WHERE SEQUENCE_NAME=?';
+                }
+                self.execute(sql,
+                    [ table + '_seq', owner ? '^' + owner + '$' : null ], function(err, result) {
                         if (err) { callback(err); return; }
                         callback(null, (result[0].count>0));
                     });
@@ -760,6 +775,10 @@ export class OracleAdapter {
         }
         else {
             view = name;
+            //get schema name (from options)
+            if (self.options && self.options.schema) {
+                owner = self.options.schema;
+            }
         }
         return {
             /**
@@ -767,7 +786,7 @@ export class OracleAdapter {
              */
             exists:function(callback) {
                 let sql = 'SELECT COUNT(*) AS "count" FROM ALL_OBJECTS WHERE object_type IN (\'VIEW\') AND object_name = ?';
-                if (typeof owner !== 'undefined') {
+                if (owner != null) {
                     sql += ' AND REGEXP_LIKE(owner,?,\'i\')';
                 }
                 self.execute(sql, [name, '^' + (owner || '') + '$'], function(err, result) {
@@ -791,7 +810,7 @@ export class OracleAdapter {
                         if (err) { return callback(err); }
                         const exists = (result[0].count>0);
                         if (exists) {
-                            const sql = util.format('DROP VIEW "%s"',name);
+                            const sql = util.format('DROP VIEW "%s"', name);
                             self.execute(sql, undefined, function(err) {
                                 if (err) { callback(err); return; }
                                 callback();
@@ -813,7 +832,7 @@ export class OracleAdapter {
                     thisArg.drop(function(err) {
                         if (err) { tr(err); return; }
                         try {
-                            let sql = util.format('CREATE VIEW "%s" AS ',name);
+                            let sql = util.format('CREATE VIEW "%s" AS ', name);
                             const formatter = new OracleFormatter();
                             sql += formatter.format(q);
                             self.execute(sql, [], tr);
