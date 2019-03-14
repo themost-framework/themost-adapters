@@ -165,7 +165,7 @@ var DataPool = exports.DataPool = function () {
     function DataPool(options) {
         _classCallCheck(this, DataPool);
 
-        this.options = util._extend({ size: 20, reserved: 2, timeout: 30000, lifetime: 1200000 }, options);
+        this.options = Object.assign({ size: 20, reserved: 2, timeout: 30000, lifetime: 1200000 }, options);
         /**
          * A collection of objects which represents the available pooled data adapters.
          */

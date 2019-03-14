@@ -931,8 +931,11 @@ var MSSqlFormatter = exports.MSSqlFormatter = function (_SqlFormatter) {
                     if (typeof x === 'string') {
                         fields.push(new QueryField(x));
                     } else {
-                        var field = util._extend(new QueryField(), x);
-                        fields.push(field.as() || field.name());
+                        /**
+                         * @type {QueryField}
+                         */
+                        var field = Object.assign(new QueryField(), x);
+                        fields.push(field.as() || field.getName());
                     }
                 });
                 sql = util.format('SELECT %s FROM (%s) t0 WHERE __RowIndex BETWEEN %s AND %s', _.map(fields, function (x) {

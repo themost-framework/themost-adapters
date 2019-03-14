@@ -1027,8 +1027,11 @@ export class OracleFormatter extends SqlFormatter {
                     fields.push(new QueryField(x));
                 }
                 else {
-                    let field = _.assign(new QueryField(), x);
-                    fields.push(field.as() || field.name());
+                    /**
+                     * @type QueryField
+                     */
+                    let field = Object.assign(new QueryField(), x);
+                    fields.push(field.as() || field.getName());
                 }
             });
             sql = util.format('SELECT %s FROM (%s) t0 WHERE "__RowIndex" BETWEEN %s AND %s', _.map(fields, (x) => {
