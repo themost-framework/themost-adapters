@@ -863,8 +863,11 @@ export class MSSqlFormatter extends SqlFormatter {
                     fields.push(new QueryField(x));
                 }
                 else {
-                    const field = util._extend(new QueryField(), x);
-                    fields.push(field.as() || field.name());
+                    /**
+                     * @type {QueryField}
+                     */
+                    const field = Object.assign(new QueryField(), x);
+                    fields.push(field.as() || field.getName());
                 }
             });
             sql = util.format('SELECT %s FROM (%s) t0 WHERE __RowIndex BETWEEN %s AND %s', _.map(fields, (x) => {

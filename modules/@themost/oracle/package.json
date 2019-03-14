@@ -1,6 +1,6 @@
 {
   "name": "@themost/oracle",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "MOST Web Framework Oracle Data Adapter",
   "main": "index.js",
   "scripts": {
