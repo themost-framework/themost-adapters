@@ -589,7 +589,7 @@ var OracleAdapter = exports.OracleAdapter = function () {
                     } else {
                         sql = 'SELECT COUNT(*) AS "count" FROM ALL_SEQUENCES WHERE SEQUENCE_NAME=?';
                     }
-                    self.execute(sql, [table + '_seq', '^' + (owner || '') + '$'], function (err, result) {
+                    self.execute(sql, [table + '_seq', owner ? '^' + owner + '$' : null], function (err, result) {
                         if (err) {
                             callback(err);return;
                         }
