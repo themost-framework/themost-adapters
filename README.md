@@ -78,8 +78,115 @@ Register MSSQL adapter:
 
 [H2 Database Adapter](https://github.com/themost-framework/themost-adapters/tree/master/modules/%40themost/h2)
 
+    npm install @themost/h2
+
+Register H2 adapter:
+
+    "adapterTypes": [
+        ...
+        { "name":"H2 Data Adapter", "invariantName": "h2", "type":"@themost/h2" }
+        ...
+    ],
+    adapters: [
+        ...
+        { "name":"development", "invariantName":"h2", "default":true,
+            "options": {
+               "path":"~/h2/test",
+               "user":"SA",
+               "password":""
+           }
+        },
+        { "name":"server", "invariantName":"h2", "default":false,
+                    "options": {
+                       "database":"test",
+                       "host":"localhost",
+                       "port":9090,
+                       "user":"SA",
+                       "password":"",
+                       "pool":100
+                   }
+                }
+        ...
+    ]
+
 [Oracle Database Adapter](https://github.com/themost-framework/themost-adapters/tree/master/modules/%40themost/oracle)
+
+    npm install @themost/oracle
+    
+Register Oracle adapter:
+
+    "adapterTypes": [
+        ...
+        { "name":"Oracle Data Adapter", "invariantName": "oracle", "type":"@themost/oracle" }
+        ...
+    ],
+    adapters: [
+        ...
+        { "name":"development", "invariantName":"oracle", "default":true,
+            "options": {
+              "host":"localhost",
+              "port":1521,
+              "user":"user",
+              "password":"password",
+              "service":"orcl",
+              "schema":"PUBLIC"
+            }
+        }
+        ...
+    ]
 
 [PostgreSQL Database Adapter](https://github.com/themost-framework/themost-adapters/tree/master/modules/%40themost/pg)
 
+    npm install @themost/pg
+
+Register PostgreSQL adapter:
+
+    "adapterTypes": [
+            ...
+            { "name":"PostgreSQL Data Adapter", "invariantName": "postgres", "type":"@themost/pg" }
+            ...
+        ],
+    adapters: {
+        "postgres": { "name":"local-db", "invariantName":"postgres", "default":true,
+            "options": {
+              "host":"localhost",
+              "post":5432,
+              "user":"user",
+              "password":"password",
+              "database":"db"
+            }
+    }
+}
+
 [Generic data connection pooling adapter](https://github.com/themost-framework/themost-adapters/tree/master/modules/%40themost/pool)
+
+    npm install @themost/pool
+
+Register Generic Pool Adapter on app.json as follows:
+
+    "adapterTypes": [
+        ...
+        { "name":"...", "invariantName": "...", "type":"..." },
+        { "name":"Pool Data Adapter", "invariantName": "pool", "type":"@themost/pool" }
+        ...
+    ],
+    adapters: [
+        ...
+        { "name":"development", "invariantName":"...", "default":false,
+            "options": {
+              "server":"localhost",
+              "user":"user",
+              "password":"password",
+              "database":"test"
+            }
+        },
+        { "name":"development_with_pool", "invariantName":"pool", "default":true,
+                    "options": {
+                      "adapter":"development"
+                    }
+                }
+        ...
+    ]
+
+
+
