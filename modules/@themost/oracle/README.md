@@ -1,8 +1,8 @@
 # @themost/oracle
 Most Web Framework Oracle Adapter
-##Install
-$ npm install @themost/oracle
-##Usage
+## Install
+    npm install @themost/oracle
+## Usage
 Register Oracle adapter on app.json as follows:
 
     "adapterTypes": [
