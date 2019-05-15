@@ -3,11 +3,11 @@
 
 Most Web Framework PostgreSQL Adapter
 
-##Install
+## Install
 
-$ npm install @themost/pg
+    npm install @themost/pg
 
-##Usage
+## Usage
 
 Register PostgreSQL adapter on app.json as follows:
 
