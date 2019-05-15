@@ -1,4 +1,4 @@
-# themost-adapter
+# themost-adapters
 MOST Web Framework 2.0 Codename Blueshift data adapters
 
 This repository contains a set of database adapters available for developing applications and services under [MOST Web Framework 2.0 Codename Blueshift](https://github.com/themost-framework/themost)
