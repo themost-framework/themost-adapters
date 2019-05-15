@@ -1,8 +1,8 @@
 # @themost/mysql
 Most Web Framework MySQL Adapter
-##Install
-$ npm install @themost/mysql
-##Usage
+## Install
+    npm install @themost/mysql
+## Usage
 Register MySQL adapter on app.json as follows:
 
     "adapterTypes": [
