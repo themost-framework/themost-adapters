@@ -1,7 +1,7 @@
 # @themost/pool
 Most Web Framework Data Pool Adapter
 ## Install
-$ npm install @themost/pool
+    npm install @themost/pool
 ## Usage
 Register Generic Pool Adapter on app.json as follows:
 
