@@ -1,8 +1,8 @@
 # @themost/mssql
 Most Web Framework MSSQL Adapter
-##Install
-$ npm install @themost/mssql
-##Usage
+## Install
+    npm install @themost/mssql
+## Usage
 Register MSSQL adapter on app.json as follows:
 
     "adapterTypes": [
