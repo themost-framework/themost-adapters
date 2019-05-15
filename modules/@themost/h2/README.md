@@ -1,8 +1,9 @@
 # @themost/h2
 Most Web Framework H2 Data Adapter
-##Install
-$ npm install @themost/h2
-##Usage
+## Install
+    npm install @themost/h2
+## Usage
+
 Register H2 adapter on app.json as follows:
 
     "adapterTypes": [
