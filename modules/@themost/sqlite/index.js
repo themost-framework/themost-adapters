@@ -34,26 +34,20 @@ var _util = require('util');
 
 var util = _interopRequireDefault(_util).default;
 
-var _formatter = require('@themost/query/formatter');
-
-var SqlFormatter = _formatter.SqlFormatter;
-
 var _sqlite = require('sqlite3');
 
 var sqlite = _interopRequireDefault(_sqlite).default;
 
-var _utils = require('@themost/common/utils');
+var _common = require('@themost/common');
 
-var TraceUtils = _utils.TraceUtils;
+var TraceUtils = _common.TraceUtils;
 
-var _utils2 = require('@themost/query/utils');
-
-var SqlUtils = _utils2.SqlUtils;
-
-var _query = require('@themost/query/query');
+var _query = require('@themost/query');
 
 var QueryExpression = _query.QueryExpression;
 var QueryField = _query.QueryField;
+var SqlUtils = _query.SqlUtils;
+var SqlFormatter = _query.SqlFormatter;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

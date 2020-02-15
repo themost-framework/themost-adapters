@@ -10,11 +10,9 @@
 import async from 'async';
 import _ from 'lodash';
 import util from 'util';
-import {SqlFormatter} from '@themost/query/formatter';
 import sqlite from 'sqlite3';
-import {TraceUtils} from "@themost/common/utils";
-import {SqlUtils} from "@themost/query/utils";
-import {QueryExpression,QueryField} from "@themost/query/query";
+import {TraceUtils} from '@themost/common';
+import {QueryExpression, QueryField, SqlUtils, SqlFormatter} from '@themost/query';
 const sqlite3 = sqlite.verbose();
 
 /**
