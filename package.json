@@ -5,7 +5,8 @@
   "description": "MOST Web Framework 2.0 Data Adapters",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-sqlite": "cd modules/@themost/sqlite && babel src --out-dir dist --copy-files --source-maps"
   },
   "engines": {
     "node": ">= 5.4.1"
@@ -66,32 +67,5 @@
     "mocha": "^3.5.1",
     "source-map-support": "^0.4.11",
     "xml-formatter": "^1.0.1"
-  },
-  "eslintConfig": {
-    "parser": "babel-eslint",
-    "env": {
-      "browser": true,
-      "node": true,
-      "es6": true,
-      "jquery": true
-    },
-    "globals": {
-      "describe": false,
-      "it": false
-    },
-    "extends": "eslint:recommended",
-    "rules": {
-      "no-console": "warn",
-      "no-invalid-this": "warn",
-      "no-undef": "error",
-      "no-unused-vars": "warn",
-      "no-var": [
-        "error"
-      ],
-      "strict": [
-        2,
-        "never"
-      ]
-    }
   }
 }

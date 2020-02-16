@@ -4,5 +4,5 @@ modules/@themost/mysql/**/*.js
 modules/@themost/pg/**/*.js
 modules/@themost/oracle/**/*.js
 modules/@themost/pool/**/*.js
-modules/@themost/sqlite/**/*.js
+modules/@themost/sqlite/dist/
 node_modules/

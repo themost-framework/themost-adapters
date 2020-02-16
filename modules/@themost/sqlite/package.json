@@ -1,8 +1,11 @@
 {
   "name": "@themost/sqlite",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "MOST Web Framework 2.0 - SQLite data adapter",
-  "module": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+  },
   "peerDependencies": {
     "@themost/common": "^2.1.6",
     "@themost/query": "^2.1.3"

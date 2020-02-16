@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
  *                     Anthi Oikonomou anthioikonomou@gmail.com
@@ -643,7 +642,7 @@ export class SqliteAdapter {
                 callback = callback || function() {};
                 self.open(function(err) {
                    if (err) { callback(err); return; }
-                    const sql = util.format("DROP VIEW IF EXISTS `%s`",name);
+                    const sql = util.format('DROP VIEW IF EXISTS `%s`',name);
                     self.execute(sql, undefined, function(err) {
                         if (err) { callback(err); return; }
                         callback();
@@ -660,7 +659,7 @@ export class SqliteAdapter {
                     thisArg.drop(function(err) {
                         if (err) { tr(err); return; }
                         try {
-                            let sql = util.format("CREATE VIEW `%s` AS ",name);
+                            let sql = util.format('CREATE VIEW `%s` AS ',name);
                             const formatter = new SqliteFormatter();
                             sql += formatter.format(q);
                             self.execute(sql, undefined, tr);
@@ -842,7 +841,7 @@ export class SqliteAdapter {
                     cols.push.apply(cols, columns);
                 }
                 else {
-                    return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
+                    return callback(new Error('Invalid parameter. Columns parameter must be a string or an array of strings.'));
                 }
 
                 const thisArg = this;
@@ -850,12 +849,12 @@ export class SqliteAdapter {
                     if (err) { return callback(err); }
                     const ix = indexes.find(function(x) { return x.name === name; });
                     //format create index SQL statement
-                    const sqlCreateIndex = util.format("CREATE INDEX %s ON %s(%s)",
+                    const sqlCreateIndex = util.format('CREATE INDEX %s ON %s(%s)',
                         formatter.escapeName(name),
                         formatter.escapeName(table),
                         cols.map(function(x) {
                             return formatter.escapeName(x);
-                        }).join(","));
+                        }).join(','));
                     if (typeof ix === 'undefined' || ix === null) {
                         self.execute(sqlCreateIndex, [], callback);
                     }
@@ -887,7 +886,7 @@ export class SqliteAdapter {
             },
             drop: function(name, callback) {
                 if (typeof name !== 'string') {
-                    return callback(new Error("Name must be a valid string."));
+                    return callback(new Error('Name must be a valid string.'));
                 }
                 self.execute(util.format('PRAGMA INDEX_LIST(`%s`)', table), null, function(err, result) {
                     if (err) { return callback(err); }
@@ -895,7 +894,7 @@ export class SqliteAdapter {
                     if (!exists) {
                         return callback();
                     }
-                    self.execute(util.format("DROP INDEX %s", self.escapeName(name)), [], callback);
+                    self.execute(util.format('DROP INDEX %s', self.escapeName(name)), [], callback);
                 });
             }
         };
@@ -972,7 +971,7 @@ export class SqliteFormatter extends SqlFormatter {
         const millisecond = zeroPad(val.getMilliseconds(), 3);
         //format timezone
         const offset = val.getTimezoneOffset(), timezone = (offset<=0 ? '+' : '-') + zeroPad(-Math.floor(offset/60),2) + ':' + zeroPad(offset%60,2);
-        return "'" + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + "." + millisecond + timezone + "'";
+        return '\'' + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond + timezone + '\'';
     }
 
     /**

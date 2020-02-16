@@ -10,7 +10,6 @@ var _get = function get(object, property, receiver) { if (object === null) objec
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @license
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * MOST Web Framework 2.0 Codename Blueshift
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       *                     Anthi Oikonomou anthioikonomou@gmail.com
@@ -655,7 +654,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         if (err) {
                             callback(err);return;
                         }
-                        var sql = util.format("DROP VIEW IF EXISTS `%s`", name);
+                        var sql = util.format('DROP VIEW IF EXISTS `%s`', name);
                         self.execute(sql, undefined, function (err) {
                             if (err) {
                                 callback(err);return;
@@ -676,7 +675,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                                 tr(err);return;
                             }
                             try {
-                                var sql = util.format("CREATE VIEW `%s` AS ", name);
+                                var sql = util.format('CREATE VIEW `%s` AS ', name);
                                 var formatter = new SqliteFormatter();
                                 sql += formatter.format(q);
                                 self.execute(sql, undefined, tr);
@@ -854,7 +853,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                     } else if (Array.isArray(columns)) {
                         cols.push.apply(cols, columns);
                     } else {
-                        return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
+                        return callback(new Error('Invalid parameter. Columns parameter must be a string or an array of strings.'));
                     }
 
                     var thisArg = this;
@@ -866,9 +865,9 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                             return x.name === name;
                         });
                         //format create index SQL statement
-                        var sqlCreateIndex = util.format("CREATE INDEX %s ON %s(%s)", formatter.escapeName(name), formatter.escapeName(table), cols.map(function (x) {
+                        var sqlCreateIndex = util.format('CREATE INDEX %s ON %s(%s)', formatter.escapeName(name), formatter.escapeName(table), cols.map(function (x) {
                             return formatter.escapeName(x);
-                        }).join(","));
+                        }).join(','));
                         if (typeof ix === 'undefined' || ix === null) {
                             self.execute(sqlCreateIndex, [], callback);
                         } else {
@@ -898,7 +897,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                 },
                 drop: function drop(name, callback) {
                     if (typeof name !== 'string') {
-                        return callback(new Error("Name must be a valid string."));
+                        return callback(new Error('Name must be a valid string.'));
                     }
                     self.execute(util.format('PRAGMA INDEX_LIST(`%s`)', table), null, function (err, result) {
                         if (err) {
@@ -910,7 +909,7 @@ var SqliteAdapter = exports.SqliteAdapter = function () {
                         if (!exists) {
                             return callback();
                         }
-                        self.execute(util.format("DROP INDEX %s", self.escapeName(name)), [], callback);
+                        self.execute(util.format('DROP INDEX %s', self.escapeName(name)), [], callback);
                     });
                 }
             };
@@ -1075,7 +1074,7 @@ var SqliteFormatter = exports.SqliteFormatter = function (_SqlFormatter) {
             //format timezone
             var offset = val.getTimezoneOffset(),
                 timezone = (offset <= 0 ? '+' : '-') + zeroPad(-Math.floor(offset / 60), 2) + ':' + zeroPad(offset % 60, 2);
-            return "'" + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + "." + millisecond + timezone + "'";
+            return '\'' + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond + timezone + '\'';
         }
 
         /**

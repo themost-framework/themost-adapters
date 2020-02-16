@@ -4,6 +4,7 @@ var gutil = require('gulp-util');
 var sourcemaps = require('gulp-sourcemaps');
 var babel = require('gulp-babel');
 var eslint = require('gulp-eslint');
+var path = require('path');
 
 var h2Module = [
   'modules/@themost/h2/**/*.es6',
@@ -28,10 +29,6 @@ var pgModule = [
 var poolModule = [
     'modules/@themost/pool/**/*.es6',
     '!modules/@themost/pool/node_modules/**/*.es6'
-];
-var sqliteModule = [
-    'modules/@themost/sqlite/**/*.es6',
-    '!modules/@themost/sqlite/node_modules/**/*.es6'
 ];
 
 function lint(files, options) {
@@ -95,14 +92,6 @@ gulp.task('build:pool', ['lint:pool'],build(poolModule));
 
 // lint @themost/pool
 gulp.task('lint:pool',lint(poolModule));
-
-// @themost/sqlite
-gulp.task('build:sqlite', ['lint:sqlite'],build(sqliteModule));
-
-// lint @themost/sqlite
-gulp.task('lint:sqlite',lint(sqliteModule));
-
-
 
 // lint @themost
 gulp.task('lint', ['lint:h2','lint:mssql', 'lint:mysql', 'lint:oracle', 'lint:pg', 'lint:pool', 'lint:sqlite']);
