@@ -7,7 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-sqlite": "cd modules/@themost/sqlite && babel src --out-dir dist --copy-files --source-maps",
-    "publish-sqlite": "cd modules/@themost/sqlite && npm publish ./"
+    "publish-sqlite": "cd modules/@themost/sqlite && npm publish ./",
+    "build-pool": "cd modules/@themost/pool && babel src --out-dir dist --copy-files --source-maps",
+    "publish-pool": "cd modules/@themost/pool && npm publish ./"
   },
   "engines": {
     "node": ">= 5.4.1"

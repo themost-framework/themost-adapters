@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
  *                     Anthi Oikonomou anthioikonomou@gmail.com
@@ -10,6 +9,7 @@
 import util from 'util';
 import {_} from 'lodash';
 import async from 'async';
+import {TraceUtils} from '@themost/common';
 
 const HASH_CODE_LENGTH = 24;
 const getConfigurationMethod = Symbol('getConfiguration');
@@ -40,18 +40,6 @@ function randomHex(length) {
 
     const buffer = new Buffer(randomString(length));
     return buffer.toString('hex');
-}
-
-function log(data) {
-    util.log(data);
-    if (data.stack) {
-        util.log(data.stack);
-    }
-}
-
-function debug(data) {
-    if (process.env.NODE_ENV==='development')
-        log(data);
 }
 
 /**
@@ -368,9 +356,9 @@ export class DataPool {
             return callback(er);
         }
         const inUseKeys = _.keys(self.inUse);
-        debug(util.format("INFO (DataPool): Connections in use:%s", inUseKeys.length));
+        TraceUtils.debug(util.format("INFO (DataPool): Connections in use:%s", inUseKeys.length));
         if ((inUseKeys.length < self.options.size) || (self.options.size === 0)) {
-            debug("INFO  (DataPool): Creating new object in data pool.");
+            TraceUtils.debug("INFO  (DataPool): Creating new object in data pool.");
             self.newObject(function(err, result) {
                 if (err) { return callback(err); }
                 return callback(null, result);
@@ -380,7 +368,7 @@ export class DataPool {
             self.queryLifetimeForObject(function(err, result) {
                 if (err) { return callback(err); }
                 if (result) { return callback(null, result); }
-                debug("INFO (DataPool): Waiting for an object from data pool.");
+                TraceUtils.debug("INFO (DataPool): Waiting for an object from data pool.");
                 self.waitForObject(function(err, result) {
                     if (err) { return callback(err); }
                     callback(null, result);
@@ -424,8 +412,8 @@ export class DataPool {
                             listener.call(self);
                         }
                         catch(e) {
-                            log('An error occured while trying to release an unknown data adapter');
-                            log(e);
+                            TraceUtils.error('An error occured while trying to release an unknown data adapter');
+                            TraceUtils.error(e);
                             //call listener without any parameter
                             listener.call(self);
                         }
@@ -434,14 +422,14 @@ export class DataPool {
             }
             else {
                 //search inUse collection
-                debug("INFO (DataPool): Releasing object from data pool.");
+                TraceUtils.debug("INFO (DataPool): Releasing object from data pool.");
                 const used = this.inUse[obj.hashCode];
                 if (typeof used !== 'undefined') {
                     //delete used adapter
                     delete this.inUse[obj.hashCode];
                     //push data adapter to available collection
                     self.available[used.hashCode] = used;
-                    debug(util.format("INFO (DataPool): Object released. Connections in use %s.", this.inUse.length));
+                    TraceUtils.debug(util.format("INFO (DataPool): Object released. Connections in use %s.", this.inUse.length));
                 }
             }
             //finally exit
@@ -659,7 +647,7 @@ process.on('exit', function() {
         const keys = _.keys(DataPool[pools]);
         _.forEach(keys, function(x) {
             try {
-                log(util.format('Cleaning up data pool (%s)', x));
+                TraceUtils.log(util.format('Cleaning up data pool (%s)', x));
                 if (typeof DataPool[pools][x] === 'undefined' || DataPool[pools][x] === null) { return; }
                 if (typeof DataPool[pools][x].cleanup === 'function') {
                     DataPool[pools][x].cleanup(function() {
@@ -668,12 +656,12 @@ process.on('exit', function() {
                 }
             }
             catch(err) {
-                debug(err);
+                TraceUtils.debug(err);
             }
         });
     }
     catch(err) {
-        debug(err);
+        TraceUtils.debug(err);
     }
 
 });
