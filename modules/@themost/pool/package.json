@@ -1,6 +1,6 @@
 {
   "name": "@themost/pool",
-  "version": "2.5.0-dev.1",
+  "version": "2.5.0",
   "description": "Most Web Framework Connection Pooling Data Adapter",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
