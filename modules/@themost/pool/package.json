@@ -1,7 +1,7 @@
 {
   "name": "@themost/pool",
-  "version": "2.5.0",
-  "description": "Most Web Framework Data Adapter Pool Extension",
+  "version": "2.5.0-dev.1",
+  "description": "Most Web Framework Connection Pooling Data Adapter",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": {
@@ -24,10 +24,8 @@
   "homepage": "https://github.com/themost-framework/themost-adapters",
   "peerDependencies": {
     "@themost/common": "^2.1.6"
-  }
+  },
   "dependencies": {
-    "async": "0.2.10",
-    "lodash": "^4.17.4",
     "generic-pool": "^3.7.1"
   }
 }

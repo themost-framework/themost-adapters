@@ -1,5 +1,17 @@
 {
     "parser": "babel-eslint",
+    "overrides": [
+        {
+            "files": [
+                "*.ts",
+                "*.tsx"
+            ],
+            "parser": "typescript-eslint-parser",
+            "plugins": [
+                "typescript"
+            ]
+        }
+    ],
     "env": {
       "browser": true,
       "node": true,
@@ -37,4 +49,3 @@
       ]
     }
   }
-  

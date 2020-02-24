@@ -6,142 +6,34 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import util from 'util';
-import {_} from 'lodash';
-import async from 'async';
-import {TraceUtils} from '@themost/common';
+import {createPool} from 'generic-pool';
+import {Args, TraceUtils} from '@themost/common';
 
-const HASH_CODE_LENGTH = 24;
 const getConfigurationMethod = Symbol('getConfiguration');
-
 const pools = Symbol('pools');
-/**
- * @function
- * @param min
- * @param max
- * @returns {*}
- */
-function randomInt(min, max) {
-    return Math.floor(Math.random()*max) + min;
-}
 
-function randomString(length) {
-
-    length = length || 16;
-    const chars = "abcdefghkmnopqursuvwxz2456789ABCDEFHJKLMNPQURSTUVWXYZ";
-    let str = "";
-    for(let i = 0; i < length; i++) {
-        str += chars.substr(randomInt(0, chars.length-1),1);
-    }
-    return str;
-}
-
-function randomHex(length) {
-
-    const buffer = new Buffer(randomString(length));
-    return buffer.toString('hex');
-}
-
-/**
- * @class PoolDictionary
- * @constructor
- */
-class PoolDictionary {
-    constructor() {
-        let _length = 0;
-        Object.defineProperty(this, 'length', {
-            get: function() {
-                return _length;
-            },
-            set: function(value) {
-                _length = value;
-            }, configurable:false, enumerable:false
-        });
-    }
-
-    exists(key) {
-        return this.hasOwnProperty(key);
-    }
-
-    push(key, value) {
-        if (this.hasOwnProperty(key)) {
-            this[key] = value;
-        }
-        else {
-            this[key] = value;
-            this.length += 1;
-        }
-    }
-
-    pop(key) {
-        if (this.hasOwnProperty(key)) {
-            delete this[key];
-            this.length -= 1;
-            return 1;
-        }
-        return 0;
-    }
-
-    clear() {
-        const self = this, keys = _.keys(this);
-        _.forEach(keys, function(x) {
-            if (self.hasOwnProperty(x)) {
-                delete self[x];
-                self.length -= 1;
-            }
-        });
-        this.length = 0;
-    }
-
-    unshift() {
-        for(const key in this) {
-            if (this.hasOwnProperty(key)) {
-                const value = this[key];
-                delete this[key];
-                this.length -= 1;
-                return value;
-            }
-        }
-    }
-}
 
 /**
  * @class
  * @property {*} options
  */
-export class DataPool {
+export class GenericPoolFactory {
     /**
      * @constructor
-     * @param {*=} options
+     * @param {GenericPoolOptions=} options
      */
     constructor(options) {
-        this.options = Object.assign({ size:20, reserved:2, timeout:30000, lifetime:1200000 }, options);
-        /**
-         * A collection of objects which represents the available pooled data adapters.
-         */
-        this.available = new PoolDictionary();
-        /**
-         * A collection of objects which represents the pooled data adapters that are currently in use.
-         */
-        this.inUse = new PoolDictionary();
-        /**
-         * An array of listeners that are currently waiting for a pooled data adapter.
-         * @type {Function[]}
-         */
-        this.listeners = [ ];
-        //set default state to active
-        this.state = 'active';
-
+        this.options = Object.assign({ }, options);
     }
 
-    createObject() {
+    create() {
         //if local adapter module has been already loaded
-        if (typeof this.adapter_ !== 'undefined') {
+        if (typeof this._adapter !== 'undefined') {
             //create adapter instance and return
-            return this.adapter_.createInstance(this.options.adapter.options);
+            return this._adapter.createInstance(this.options.adapter.options);
         }
 
-        this.options = this.options || {};
+        this.options = this.options || { };
         if (typeof this[getConfigurationMethod] !== 'function') {
             throw new TypeError('Configuration getter must be a function.');
         }
@@ -149,391 +41,145 @@ export class DataPool {
          * @type {ConfigurationBase}
          */
         let configuration = this[getConfigurationMethod]();
-        if (_.isNil(configuration)) {
+        if (configuration == null) {
             throw new TypeError('Configuration cannot be empty at this context.');
         }
+        /**
+         * @type {ApplicationDataConfiguration}
+         */
         let dataConfiguration = configuration.getStrategy(function DataConfigurationStrategy() {
             //
         });
-        if (_.isNil(dataConfiguration)) {
+        if (dataConfiguration == null) {
             throw new TypeError('Data configuration cannot be empty at this context.');
         }
         if (typeof dataConfiguration.getAdapterType !== 'function') {
             throw new TypeError('Data configuration adapter getter must be a function.');
         }
         let adapter = dataConfiguration.adapters.find((x)=> {
-           return x.name === this.options.adapter;
+            return x.name === this.options.adapter;
         });
-        if (_.isNil(adapter)) {
+        if (adapter == null) {
             throw new TypeError('Child data adapter cannot be found.');
         }
-        this.adapter_ = dataConfiguration.getAdapterType(adapter.invariantName);
+        this._adapter = dataConfiguration.getAdapterType(adapter.invariantName);
         //set child adapter
         this.options.adapter = adapter;
         //get child adapter
-        return this.adapter_.createInstance(this.options.adapter.options);
+        return this._adapter.createInstance(this.options.adapter.options);
     }
 
-    cleanup(callback) {
-        try {
-            const self = this;
-            self.state = 'paused';
-            const keys = _.keys(self.available);
-            async.eachSeries(keys, function(key,cb) {
-                const item = self.available[key];
-               if (typeof item === 'undefined' || item === null) { return cb(); }
-                if (typeof item.close === 'function') {
-                    item.close(function() {
-                        cb();
-                    });
-                }
-            }, function(err) {
-                callback(err);
-                //clear available collection
-                _.forEach(keys, function(key) {
-                    delete self.available[key];
-                });
-                self.state = 'active';
-            });
-        }
-        catch(e) {
-            callback(e);
+    destroy(adapter) {
+        if (adapter) {
+            return adapter.close();
         }
     }
 
-    /**
-     * Queries data adapter lifetime in order to release an object which exceeded the defined lifetime limit.
-     * If such an object exists, releases data adapter and creates a new one.
-     * @private
-     * @param {Function} callback
-     */
-    queryLifetimeForObject(callback) {
-        const self = this;
-        const keys = _.keys(self.inUse);
-        let newObj;
-        if (keys.length===0) { return callback(); }
-        if (self.options.lifetime>0) {
-            const nowTime = (new Date()).getTime();
-            async.eachSeries(keys, function(hashCode,cb) {
-                const obj = self.inUse[hashCode];
-                if (typeof obj === 'undefined' || obj === null) {
-                    return cb();
-                }
-                if (nowTime>(obj.createdAt.getTime()+self.options.lifetime)) {
-                    if (typeof obj.close !== 'function') {
-                        return cb();
-                    }
-                    //close data adapter (the client which is using this adapter may get an error for this, but this data adapter has been truly timed out)
-                    obj.close(function() {
-                        //create new object (data adapter)
-                        newObj = self.createObject();
-                        //add createdAt property
-                        newObj.createdAt = new Date();
-                        //add object hash code property
-                        newObj.hashCode = randomHex(HASH_CODE_LENGTH);
-                        //delete inUse object
-                        delete self.inUse[hashCode];
-                        //push object in inUse collection
-                        self.inUse[newObj.hashCode] = newObj;
-                        //return new object
-                        return cb(newObj);
-                    });
-                }
-                else {
-                    cb();
-                }
-            }, function(res) {
-                if (res instanceof Error) {
-                    callback(res);
-                }
-                else {
-                    callback(null, res);
-                }
-            });
-        }
-        else {
-            callback();
-        }
-    }
-
-    /**
-     * @private
-     * @param {Function} callback
-     */
-    waitForObject(callback) {
-        const self = this;
-        let timeout;
-        let newObj;
-        //register a connection pool timeout
-        timeout = setTimeout(function() {
-            //throw timeout exception
-            const er = new Error('Connection pool timeout.');
-            er.code = 'EPTIMEOUT';
-            callback(er);
-        }, self.options.timeout);
-        self.listeners.push(function(releasedObj) {
-            //clear timeout
-            if (timeout) {
-                clearTimeout(timeout);
-            }
-            if (releasedObj) {
-                //push (update) released object in inUse collection
-                releasedObj.createdAt = new Date();
-                self.inUse[releasedObj.hashCode] = releasedObj;
-                //return new object
-                return callback(null, releasedObj);
-            }
-            const keys = _.keys(self.available);
-            if (keys.length>0) {
-                const key = keys[0];
-                //get connection from available connections
-                const pooledObj = self.available[key];
-                delete self.available[key];
-                //push object in inUse collection
-                self.inUse[pooledObj.hashCode] = pooledObj;
-                //return pooled object
-                callback(null, pooledObj);
-            }
-            else {
-                //create new object
-                newObj = self.createObject();
-                //add createdAt property
-                newObj.createdAt = new Date();
-                //add object hash code
-                newObj.hashCode = randomHex(HASH_CODE_LENGTH);
-                //push object in inUse collection
-                self.inUse[newObj.hashCode] = newObj;
-                //return new object
-                callback(null, newObj);
-            }
-        });
-    }
-
-    /**
-     * @private
-     * @param {Function} callback
-     */
-    newObject(callback) {
-        const self = this;
-        let newObj;
-        for(const key in self.available) {
-            if (self.available.hasOwnProperty(key)) {
-                //get available object
-                newObj = self.available[key];
-                //delete available key from collection
-                delete self.available[key];
-                //add createdAt property
-                newObj.createdAt = new Date();
-                //push object in inUse collection
-                self.inUse[newObj.hashCode] = newObj;
-                //and finally return it
-                return callback(null, newObj);
-            }
-        }
-        //otherwise create new object
-        newObj = self.createObject();
-        //add createdAt property
-        newObj.createdAt = new Date();
-        //add object hash code
-        newObj.hashCode = randomHex(HASH_CODE_LENGTH);
-        //push object in inUse collection
-        self.inUse[newObj.hashCode] = newObj;
-        //return new object
-        return callback(null, newObj);
-    }
-
-    /**
-     *
-     * @param {Function} callback
-     */
-    getObject(callback) {
-        const self = this;
-        callback = callback || function() {};
-
-        if (self.state !== 'active') {
-            const er = new Error('Connection refused due to pool state.');
-            er.code = 'EPSTATE';
-            return callback(er);
-        }
-        const inUseKeys = _.keys(self.inUse);
-        TraceUtils.debug(util.format("INFO (DataPool): Connections in use:%s", inUseKeys.length));
-        if ((inUseKeys.length < self.options.size) || (self.options.size === 0)) {
-            TraceUtils.debug("INFO  (DataPool): Creating new object in data pool.");
-            self.newObject(function(err, result) {
-                if (err) { return callback(err); }
-                return callback(null, result);
-            });
-        }
-        else {
-            self.queryLifetimeForObject(function(err, result) {
-                if (err) { return callback(err); }
-                if (result) { return callback(null, result); }
-                TraceUtils.debug("INFO (DataPool): Waiting for an object from data pool.");
-                self.waitForObject(function(err, result) {
-                    if (err) { return callback(err); }
-                    callback(null, result);
-                });
-            });
-        }
-    }
-
-    /**
-     *
-     * @param {*} obj
-     * @param {Function} callback
-     */
-    releaseObject(obj, callback) {
-        const self = this;
-        callback = callback || function() {};
-        if (typeof obj === 'undefined' || obj === null) {
-            return callback();
-        }
-        try {
-            //get the first listener
-            const listener = self.listeners.shift();
-            //if listener exists
-            if (typeof listener === 'function') {
-                //execute listener
-                if (typeof obj.hashCode === 'undefined' || obj.hashCode === null) {
-                    //generate hashCode
-                    obj.hashCode = randomHex(HASH_CODE_LENGTH);
-                }
-                if (self.inUse.hasOwnProperty(obj.hashCode)) {
-                    //call listener with the released object as parameter
-                    listener.call(self, obj);
-                }
-                else {
-                    //validate released object
-                    if (typeof obj.close === 'function') {
-                        try {
-                            //call close() method
-                            obj.close();
-                            //call listener without any parameter
-                            listener.call(self);
-                        }
-                        catch(e) {
-                            TraceUtils.error('An error occured while trying to release an unknown data adapter');
-                            TraceUtils.error(e);
-                            //call listener without any parameter
-                            listener.call(self);
-                        }
-                    }
-                }
-            }
-            else {
-                //search inUse collection
-                TraceUtils.debug("INFO (DataPool): Releasing object from data pool.");
-                const used = this.inUse[obj.hashCode];
-                if (typeof used !== 'undefined') {
-                    //delete used adapter
-                    delete this.inUse[obj.hashCode];
-                    //push data adapter to available collection
-                    self.available[used.hashCode] = used;
-                    TraceUtils.debug(util.format("INFO (DataPool): Object released. Connections in use %s.", this.inUse.length));
-                }
-            }
-            //finally exit
-            callback();
-        }
-        catch(e) {
-            callback(e);
-        }
-    }
 }
 
 /**
  * @class
  */
-export class PoolAdapter {
+export class GenericPoolAdapter {
     /**
      * @constructor
-     * @augments DataAdapter
-     * @property {DataAdapter} base
-     * @property {DataPool} pool
+     * @property {*} base
+     * @property {GenericPoolFactory} pool
      */
     constructor(options) {
         this.options = options;
         const self = this;
         Object.defineProperty(this, 'pool', {
             get: function() {
-                return DataPool[pools][self.options.pool];
-            }, configurable:false, enumerable:false
+                return GenericPoolAdapter[pools][self.options.pool];
+            }, 
+            configurable:false, 
+            enumerable:false
         });
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
+     * Assigns the given application configuration getter to current object.
      * @param {Function} getConfigurationFunc
      */
     hasConfiguration(getConfigurationFunc) {
-        this.pool[getConfigurationMethod] = getConfigurationFunc;
+        this.pool._factory[getConfigurationMethod] = getConfigurationFunc;
     }
 
     /**
      * @private
-     * @param callback
+     * @param {GenericPoolAdapterCallback} callback
      */
     open(callback) {
         const self = this;
         if (self.base) {
             return self.base.open(callback);
         }
-        else {
-            self.pool.getObject(function(err, result) {
-                if (err) { return callback(err); }
-                self.base = result;
-                //add lastIdentity()
-                if (self.base && typeof self.base.lastIdentity === 'function') {
-                    Object.assign(self, {
-                        lastIdentity(callback) {
-                            return this.base.lastIdentity(callback);
-                        }
-                    });
-                }
-                //add nextIdentity()
-                if (self.base && typeof self.base.nextIdentity === 'function') {
-                    Object.assign(self, {
-                        nextIdentity(entity, attribute, callback) {
-                            return this.base.nextIdentity(entity, attribute, callback);
-                        }
-                    });
-                }
-                self.base.open(callback);
-            });
-        }
+        // get object from pool
+        self.pool.acquire().then( result => {
+            TraceUtils.debug(`GenericPoolAdapter: acquire() => borrowed: ${self.pool.borrowed}, pending: ${self.pool.pending}`);
+            // set base adapter
+            self.base = result;
+            //add lastIdentity() method by assigning base.lastIdentity
+            if (self.base && typeof self.base.lastIdentity === 'function') {
+                Object.assign(self, {
+                    lastIdentity(callback) {
+                        return this.base.lastIdentity(callback);
+                    }
+                });
+            }
+            //add nextIdentity() method by assigning base.nextIdentity
+            if (self.base && typeof self.base.nextIdentity === 'function') {
+                Object.assign(self, {
+                    nextIdentity(entity, attribute, callback) {
+                        return this.base.nextIdentity(entity, attribute, callback);
+                    }
+                });
+            }
+            return self.base.open(callback);
+        }).catch( err => {
+            return callback(err);
+        });
     }
 
     /**
      * Closes the underlying database connection
-     * @param callback {function(Error=)}
+     * @param {GenericPoolAdapterCallback=} callback
      */
     close(callback) {
         callback = callback || function() {};
-        const self = this;
-        if (self.base) {
-            self.pool.releaseObject(self.base,callback);
-            if (typeof self.lastIdentity === 'function') {
-                delete self.lastIdentity;
+        if (this.base) {
+            // return object to pool
+            this.pool.release(this.base);
+            TraceUtils.debug(`GenericPoolAdapter: release() => borrowed: ${this.pool.borrowed}, pending: ${this.pool.pending}`);
+            // remove lastIdentity() method
+            if (typeof this.lastIdentity === 'function') {
+                delete this.lastIdentity;
             }
-            if (typeof self.nextIdentity === 'function') {
-                delete self.nextIdentity;
+            // remove nextIdentity() method
+            if (typeof this.nextIdentity === 'function') {
+                delete this.nextIdentity;
             }
-            delete self.base;
+            // destroy local object
+            delete this.base;
         }
-        else {
-            callback();
-        }
+        // exit
+        return callback();
     }
 
     /**
      * Executes a query and returns the result as an array of objects.
-     * @param query {string|*}
-     * @param values {*}
-     * @param callback {Function}
+     * @param {string|*} query
+     * @param {*} values
+     * @param {Function} callback
      */
     execute(query, values, callback) {
         const self = this;
         self.open(function(err) {
-            if (err) { return callback(err); }
+            if (err) {
+                return callback(err);
+            }
             self.base.execute(query, values, callback);
         });
     }
@@ -593,75 +239,77 @@ export class PoolAdapter {
 
     /**
      *
-     * @param obj {DataModelMigration|*} An Object that represents the data model scheme we want to migrate
-     * @param callback {Function}
+     * @param {*} obj  An Object that represents the data model scheme we want to migrate
+     * @param {GenericPoolAdapterCallback} callback
      */
     migrate(obj, callback) {
         const self = this;
-        self.open(function(err) {
-            if (err) { return callback(err); }
-            self.base.migrate(obj, callback);
+        return self.open(function(err) {
+            if (err) {
+                return callback(err);
+            }
+            return self.base.migrate(obj, callback);
         });
     }
 }
 /**
- * @param {*} options
+ * @param {GenericPoolOptions} options
  */
 export function createInstance(options) {
-    let name, er;
-    if (typeof options.adapter === 'undefined' || options.adapter === null) {
-        er = new Error('Invalid argument. The target data adapter is missing.');
-        er.code = 'EARG';
-        throw er;
-    }
+    Args.check(options.adapter != null, 'Invalid argument. The target data adapter is missing.');
     //init pool collection
-    DataPool[pools] = DataPool[pools] || {};
-
+    GenericPoolAdapter[pools] = GenericPoolAdapter[pools] || {};
     //get adapter's name
+    let name;
     if (typeof options.adapter === 'string') {
         name = options.adapter;
     }
-    else if (typeof options.adapter.name === 'string') {
-        name = options.adapter.name;
-    }
-    //validate name
-    if (typeof name === 'undefined') {
-        er = new Error('Invalid argument. The target data adapter name is missing.');
-        er.code = 'EARG';
-        throw er;
-    }
+    Args.check(name != null, 'Invalid argument. The target data adapter name is missing.');
     /**
-     * @type {DataPool}
+     * @type {*}
      */
-    let pool = DataPool[pools][name];
-    if (typeof pool === 'undefined' || pool === null) {
+    let pool = GenericPoolAdapter[pools][name];
+    if (pool == null) {
         //create new pool with the name specified in options
-        DataPool[pools][name] = new DataPool(options);
+        pool = createPool(new GenericPoolFactory(options), Object.assign({
+            // set default max size to 25
+            max: 25
+        }, options));
+        GenericPoolAdapter[pools][name] = pool;
+        TraceUtils.debug(`GenericPoolAdapter: createPool() => name: ${name}, min: ${pool.min}, max: ${pool.max}`);
     }
-    return new PoolAdapter({ pool:name });
+    return new GenericPoolAdapter({ pool:name });
 }
 
 process.on('exit', function() {
-    if (_.isNil(DataPool[pools])) { return; }
+    if (GenericPoolAdapter[pools] == null) {
+        return;
+    }
     try {
-        const keys = _.keys(DataPool[pools]);
-        _.forEach(keys, function(x) {
+        const keys = Object.keys(GenericPoolAdapter[pools]);
+        keys.forEach(key => {
+            if (Object.hasOwnProperty.call(GenericPoolAdapter[pools], key) === false) {
+                return;
+            }
             try {
-                TraceUtils.log(util.format('Cleaning up data pool (%s)', x));
-                if (typeof DataPool[pools][x] === 'undefined' || DataPool[pools][x] === null) { return; }
-                if (typeof DataPool[pools][x].cleanup === 'function') {
-                    DataPool[pools][x].cleanup(function() {
-                        //do nothing
-                    });
+                TraceUtils.log(`Cleaning up data pool ${key}`);
+                const pool = GenericPoolAdapter[pools][key];
+                if (pool == null) {
+                    return;
                 }
+                pool.drain().then(function() {
+                    pool.clear();
+                });
             }
             catch(err) {
-                TraceUtils.debug(err);
+                TraceUtils.error(`An error occurred while cleaning up ${key} pool`);
+                TraceUtils.error(err);
             }
         });
     }
     catch(err) {
-        TraceUtils.debug(err);
+        TraceUtils.error('An error occurred while cleaning up pools');
+        TraceUtils.error(err);
     }
 
 });

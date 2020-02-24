@@ -3,6 +3,7 @@ modules/@themost/mssql/**/*.js
 modules/@themost/mysql/**/*.js
 modules/@themost/pg/**/*.js
 modules/@themost/oracle/**/*.js
-modules/@themost/pool/**/*.js
+modules/@themost/pool/dist/
 modules/@themost/sqlite/dist/
 node_modules/
+*.ts
