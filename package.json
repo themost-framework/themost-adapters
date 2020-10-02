@@ -8,7 +8,8 @@
     "test": "jasmine",
     "test-mssql": "cd modules/@themost/mssql && npm run test",
     "build-sqlite": "cd modules/@themost/sqlite && babel src --out-dir dist --copy-files --source-maps",
-    "publish-sqlite": "cd modules/@themost/sqlite && npm publish ./"
+    "publish-sqlite": "cd modules/@themost/sqlite && npm publish ./",
+    "build-mssql": "cd modules/@themost/mssql && babel src --out-dir dist --copy-files --source-maps"
   },
   "engines": {
     "node": ">= 8"
