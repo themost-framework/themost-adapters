@@ -1,3 +1,6 @@
 [submodule "modules/@themost/mssql"]
 	path = modules/@themost/mssql
 	url = https://github.com/themost-framework/themost-mssql.git
+[submodule "modules/@themost/sqlite"]
+	path = modules/@themost/sqlite
+	url = https://github.com/themost-framework/themost-sqlite.git
