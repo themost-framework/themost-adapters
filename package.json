@@ -37,7 +37,7 @@
   "dependencies": {
     "@themost/common": "^2.5.2",
     "@themost/query": "^2.5.0",
-    "async": "0.2.10",
+    "async": "2.6.4",
     "lodash": "^4.17.19",
     "moment": "^2.24.0"
   },
