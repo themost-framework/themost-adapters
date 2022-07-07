@@ -39,7 +39,7 @@
     "@themost/query": "^2.5.0",
     "async": "0.2.10",
     "lodash": "^4.17.19",
-    "moment": "^2.24.0"
+    "moment": "^2.29.4"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
